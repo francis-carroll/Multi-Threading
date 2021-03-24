@@ -1,7 +1,7 @@
 #pragma once
-#pragma once
 
 #include <SFML/Graphics.hpp>
+#include <Grid.h>
 
 using namespace std;
 using namespace sf;
@@ -19,4 +19,5 @@ private:
 	void setup();
 
 	RenderWindow* m_window;
+	Grid* grid;
 };

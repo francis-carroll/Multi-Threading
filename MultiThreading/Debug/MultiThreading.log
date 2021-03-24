@@ -1,4 +1,6 @@
 ﻿  Game.cpp
+  Grid.cpp
   main.cpp
+  NodeData.cpp
   Generating Code...
   MultiThreading.vcxproj -> C:\Users\fcarr\Desktop\MultiThreading\Debug\MultiThreading.exe

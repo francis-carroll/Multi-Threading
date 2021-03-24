@@ -58,4 +58,5 @@ void Game::processEvents()
 
 void Game::setup()
 {
+	grid = new Grid(GridSize::ThirtyX);
 }
