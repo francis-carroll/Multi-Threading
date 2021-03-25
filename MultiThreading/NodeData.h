@@ -12,10 +12,11 @@ class NodeData
 public:
 	NodeData(int t_index, Vector2f t_position);
 	~NodeData();
+
+	Vector2f getPosition();
 private:
 	int m_index;
 	Vector2f m_position;
 	bool m_occupied;
 	bool m_marked;
-
 };

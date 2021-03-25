@@ -11,3 +11,8 @@ NodeData::NodeData(int t_index, Vector2f t_position) :
 NodeData::~NodeData()
 {
 }
+
+Vector2f NodeData::getPosition()
+{
+	return m_position;
+}

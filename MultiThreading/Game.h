@@ -16,8 +16,12 @@ public:
 	void render();
 	void processEvents();
 private:
+	const Vector2f SIZE = Vector2f(1.0f, 1.0f);
+
 	void setup();
+	void setupRender();
 
 	RenderWindow* m_window;
 	Grid* grid;
+	RectangleShape m_shape;
 };

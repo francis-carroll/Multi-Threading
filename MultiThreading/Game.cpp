@@ -1,7 +1,7 @@
 #include "Game.h"
 
 Game::Game() :
-	m_window(new RenderWindow(VideoMode(800, 800, 32), "MultiThreaded AStar Ambush Sim", Style::Default))
+	m_window(new RenderWindow(VideoMode(1000, 1000, 32), "MultiThreaded AStar Ambush Sim", Style::Default))
 {
 	setup();
 }
@@ -15,21 +15,21 @@ void Game::run()
 {
 	Clock clock;
 	Time timeSinceLastUpdate = Time::Zero;
-	Time timePerFrame = seconds(1.f / 60.f); // 60 fps
+	Time timePerFrame = seconds(1.f / 60.f);
 
 	while (m_window->isOpen())
 	{
-		processEvents();                                //As many as possible
+		processEvents();
 		timeSinceLastUpdate += clock.getElapsedTime();
 
 		if (timeSinceLastUpdate > timePerFrame)
 		{
-			processEvents();                            //At least 60 fps
-			update(timePerFrame);                        //60 fps
+			processEvents();
+			update(timePerFrame);
 			timeSinceLastUpdate -= timePerFrame;
 			clock.restart();
 		}
-		render();                                        //As many as possible
+		render();
 	}
 }
 
@@ -40,6 +40,13 @@ void Game::update(Time t_deltaTime)
 void Game::render()
 {
 	m_window->clear();
+
+	vector<NodeData*> nodes = grid->getNodes();
+	for (NodeData* n : nodes)
+	{
+		m_shape.setPosition(n->getPosition());
+		m_window->draw(m_shape);
+	}
 
 	m_window->display();
 }
@@ -58,5 +65,14 @@ void Game::processEvents()
 
 void Game::setup()
 {
-	grid = new Grid(GridSize::ThirtyX);
+	grid = new Grid(GridSize::ThirtyX, SIZE);
+	setupRender();
+}
+
+void Game::setupRender()
+{
+	//m_shape.setOutlineThickness(1.0f);
+	//m_shape.setOutlineColor(Color::Black);
+	m_shape.setFillColor(Color::Green);
+	m_shape.setSize(SIZE);
 }
