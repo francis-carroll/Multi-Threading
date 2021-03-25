@@ -1,8 +1,7 @@
 #include "Grid.h"
 
-Grid::Grid(GridSize t_size, Vector2f t_nodeSize) :
-	 m_gridSize(t_size),
-	 m_nodeSize(t_nodeSize)
+Grid::Grid(GridSize t_size) :
+	 m_gridSize(t_size)
 {
 	setupGrid();
 }
@@ -18,6 +17,11 @@ Grid::~Grid()
 vector<NodeData*> Grid::getNodes()
 {
 	return m_nodes;
+}
+
+GridSize Grid::getGridSize()
+{
+	return m_gridSize;
 }
 
 void Grid::setupGrid()
@@ -44,7 +48,7 @@ void Grid::thirtyGrid()
 	{
 		for (int j = 0; j < THIRTY_X; j++)
 		{
-			NodeData* temp = new NodeData(i * THIRTY_X + j, Vector2f(i * m_nodeSize.x, j * m_nodeSize.y));
+			NodeData* temp = new NodeData(i * THIRTY_X + j, Vector2f(i * (SCREEN_SIZE.x / THIRTY_X), j * (SCREEN_SIZE.y / THIRTY_X)));
 			m_nodes.push_back(temp);
 		}
 	}
@@ -56,7 +60,7 @@ void Grid::hundredGrid()
 	{
 		for (int j = 0; j < HUNDRED_X; j++)
 		{
-			NodeData* temp = new NodeData(i * HUNDRED_X + j, Vector2f(i * m_nodeSize.x, j * m_nodeSize.y));
+			NodeData* temp = new NodeData(i * HUNDRED_X + j, Vector2f(i * (SCREEN_SIZE.x / HUNDRED_X), j * (SCREEN_SIZE.y / HUNDRED_X)));
 			m_nodes.push_back(temp);
 		}
 	}
@@ -68,7 +72,7 @@ void Grid::thousandGrid()
 	{
 		for (int j = 0; j < THOUSAND_X; j++)
 		{
-			NodeData* temp = new NodeData(i * THOUSAND_X + j, Vector2f(i * m_nodeSize.x, j * m_nodeSize.y));
+			NodeData* temp = new NodeData(i * THOUSAND_X + j, Vector2f(i * (SCREEN_SIZE.x / THOUSAND_X), j * (SCREEN_SIZE.y / THOUSAND_X)));
 			m_nodes.push_back(temp);
 		}
 	}

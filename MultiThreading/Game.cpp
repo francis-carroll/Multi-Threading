@@ -1,9 +1,9 @@
 #include "Game.h"
 
 Game::Game() :
-	m_window(new RenderWindow(VideoMode(1000, 1000, 32), "MultiThreaded AStar Ambush Sim", Style::Default))
+	m_window(new RenderWindow(VideoMode(SCREEN_SIZE.x, SCREEN_SIZE.y, 32), "MultiThreaded AStar Ambush Sim", Style::Default))
 {
-	setup();
+	setup(GridSize::ThousandX);
 }
 
 Game::~Game()
@@ -60,19 +60,47 @@ void Game::processEvents()
 		{
 			m_window->close();
 		}
+
+		if (event.type == event.KeyPressed)
+		{
+			if (event.key.code == Keyboard::Num1)
+				setup(GridSize::ThirtyX);
+			else if (event.key.code == Keyboard::Num2)
+				setup(GridSize::HundredX);
+			else if (event.key.code == Keyboard::Num3)
+				setup(GridSize::ThousandX);
+		}
 	}
 }
 
-void Game::setup()
+void Game::setup(GridSize t_size)
 {
-	grid = new Grid(GridSize::ThirtyX, SIZE);
+	if (grid != nullptr)
+		delete grid;
+	grid = new Grid(t_size);
 	setupRender();
 }
 
 void Game::setupRender()
 {
-	//m_shape.setOutlineThickness(1.0f);
-	//m_shape.setOutlineColor(Color::Black);
 	m_shape.setFillColor(Color::Green);
-	m_shape.setSize(SIZE);
+	switch (grid->getGridSize())
+	{
+	case GridSize::ThirtyX:
+		m_shape.setSize(Vector2f(SCREEN_SIZE.x / THIRTY_X, SCREEN_SIZE.y / THIRTY_X));
+		m_shape.setOutlineThickness(1.0f);
+		m_shape.setOutlineColor(Color::Black);
+		break;
+	case GridSize::HundredX:
+		m_shape.setSize(Vector2f(SCREEN_SIZE.x / HUNDRED_X, SCREEN_SIZE.y / HUNDRED_X));
+		m_shape.setOutlineThickness(1.0f);
+		m_shape.setOutlineColor(Color::Black);
+		break;
+	case GridSize::ThousandX:
+		m_shape.setSize(Vector2f(SCREEN_SIZE.x / THOUSAND_X, SCREEN_SIZE.y / THOUSAND_X));
+		m_shape.setOutlineThickness(0.0f);
+		break;
+	default:
+		break;
+	}
 }

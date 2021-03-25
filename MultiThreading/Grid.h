@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <Globals.h>
 #include <NodeData.h>
 
 using namespace std;
@@ -17,15 +18,12 @@ enum class GridSize
 class Grid
 {
 public:
-	Grid(GridSize t_size, Vector2f t_nodeSize);
+	Grid(GridSize t_size);
 	~Grid();
 
 	vector<NodeData*> getNodes();
+	GridSize getGridSize();
 private:
-	const int THIRTY_X = 30;
-	const int HUNDRED_X = 100;
-	const int THOUSAND_X = 1000;
-
 	void setupGrid();
 	void thirtyGrid();
 	void hundredGrid();
@@ -33,5 +31,4 @@ private:
 
 	GridSize m_gridSize;
 	vector<NodeData*> m_nodes;
-	Vector2f m_nodeSize;
 };
