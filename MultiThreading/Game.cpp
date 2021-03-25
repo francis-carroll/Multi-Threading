@@ -44,6 +44,11 @@ void Game::render()
 	vector<NodeData*> nodes = grid->getNodes();
 	for (NodeData* n : nodes)
 	{
+		if (n->getCellState() == CellState::Wall)
+			m_shape.setFillColor(Color::Black);
+		else
+			m_shape.setFillColor(Color::Green);
+
 		m_shape.setPosition(n->getPosition());
 		m_window->draw(m_shape);
 	}
@@ -77,6 +82,7 @@ void Game::setup(GridSize t_size)
 {
 	if (grid != nullptr)
 		delete grid;
+
 	grid = new Grid(t_size);
 	setupRender();
 }
