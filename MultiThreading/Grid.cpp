@@ -1,20 +1,23 @@
 #include "Grid.h"
 
 Grid::Grid(GridSize t_size) :
-	 m_gridSize(t_size)
+	m_gridSize(t_size),
+	m_nodes(new vector<NodeData*>()),
+	m_vonNewmanDirection({ 3,5,1,7 })
 {
 	setupGrid();
 }
 
 Grid::~Grid()
 {
-	for (NodeData* node : m_nodes)
+	for (NodeData* node : *m_nodes)
 	{
 		delete node;
 	}
+	delete m_nodes;
 }
 
-vector<NodeData*> Grid::getNodes()
+vector<NodeData*>* Grid::getNodes()
 {
 	return m_nodes;
 }
@@ -22,6 +25,16 @@ vector<NodeData*> Grid::getNodes()
 GridSize Grid::getGridSize()
 {
 	return m_gridSize;
+}
+
+Vector2i Grid::getRowCol(int t_nodeIndex)
+{
+	return Vector2i(t_nodeIndex / int(m_cellCount), t_nodeIndex % int(m_cellCount));
+}
+
+int Grid::getIndex(int t_row, int t_col)
+{
+	return int(t_col + (t_row * m_cellCount));
 }
 
 void Grid::setupGrid()
@@ -40,10 +53,12 @@ void Grid::setupGrid()
 	default:
 		break;
 	}
+	setupNodeNeighbours();
 }
 
 void Grid::thirtyGrid()
 {
+	m_cellCount = THIRTY_X;
 	for (int i = 0; i < THIRTY_X; i++)
 	{
 		for (int j = 0; j < THIRTY_X; j++)
@@ -55,13 +70,14 @@ void Grid::thirtyGrid()
 			{
 				temp->setCellState(CellState::Wall);
 			}
-			m_nodes.push_back(temp);
+			m_nodes->push_back(temp);
 		}
 	}
 }
 
 void Grid::hundredGrid()
 {
+	m_cellCount = HUNDRED_X;
 	for (int i = 0; i < HUNDRED_X; i++)
 	{
 		for (int j = 0; j < HUNDRED_X; j++)
@@ -76,13 +92,14 @@ void Grid::hundredGrid()
 			{
 				temp->setCellState(CellState::Wall);
 			}
-			m_nodes.push_back(temp);
+			m_nodes->push_back(temp);
 		}
 	}
 }
 
 void Grid::thousandGrid()
 {
+	m_cellCount = THOUSAND_X;
 	for (int i = 0; i < THOUSAND_X; i++)
 	{
 		for (int j = 0; j < THOUSAND_X; j++)
@@ -110,7 +127,59 @@ void Grid::thousandGrid()
 			{
 				temp->setCellState(CellState::Wall);
 			}
-			m_nodes.push_back(temp);
+			m_nodes->push_back(temp);
+		}
+	}
+}
+
+void Grid::setupNodeNeighbours()
+{
+	//mooreNeighbours();
+	vonNewmanNeighbours();
+}
+
+void Grid::mooreNeighbours()
+{
+	for (NodeData* node : *m_nodes) {
+		//for each direction of the node
+		for (int d = 0; d < 9; d++) {
+			//execpt 4, the current node
+			if (d == 4) { continue; }
+
+			Vector2i temp = getRowCol(node->getIndex());
+			int neighbourRow = temp.x + ((d % 3) - 1); //calculates neighbour rows
+			int neighbourCol = temp.y + ((d / 3) - 1); //calculates neighbour columns
+
+			//if the neighbor row or col is outside the boundry, skip
+			if (neighbourRow >= 0 && neighbourRow < m_cellCount &&
+				neighbourCol >= 0 && neighbourCol < m_cellCount)
+			{
+				int nodeIndex = getIndex(neighbourRow, neighbourCol);
+				//add the neighbour
+				node->addNeighbour(m_nodes->at(nodeIndex));
+			}
+		}
+	}
+}
+
+void Grid::vonNewmanNeighbours()
+{
+	for (NodeData* node : *m_nodes) {
+		//for each direction of the node
+		for (int d : m_vonNewmanDirection) {
+
+			Vector2i temp = getRowCol(node->getIndex());
+			int neighbourRow = temp.x + ((d % 3) - 1); //calculates neighbour rows
+			int neighbourCol = temp.y + ((d / 3) - 1); //calculates neighbour columns
+
+			//if the neighbor row or col is outside the boundry, skip
+			if (neighbourRow >= 0 && neighbourRow < m_cellCount &&
+				neighbourCol >= 0 && neighbourCol < m_cellCount)
+			{
+				int nodeIndex = getIndex(neighbourRow, neighbourCol);
+				//add the neighbour
+				node->addNeighbour(m_nodes->at(nodeIndex));
+			}
 		}
 	}
 }

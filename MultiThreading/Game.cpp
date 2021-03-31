@@ -3,7 +3,7 @@
 Game::Game() :
 	m_window(new RenderWindow(VideoMode(SCREEN_SIZE.x, SCREEN_SIZE.y, 32), "MultiThreaded AStar Ambush Sim", Style::Default))
 {
-	setup(GridSize::ThousandX);
+	setup(GridSize::HundredX);
 }
 
 Game::~Game()
@@ -41,8 +41,8 @@ void Game::render()
 {
 	m_window->clear();
 
-	vector<NodeData*> nodes = grid->getNodes();
-	for (NodeData* n : nodes)
+	vector<NodeData*>* nodes = grid->getNodes();
+	for (NodeData* n : *nodes)
 	{
 		if (n->getCellState() == CellState::Wall)
 			m_shape.setFillColor(Color::Black);

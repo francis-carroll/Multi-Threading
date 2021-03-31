@@ -21,12 +21,16 @@ public:
 	~NodeData();
 
 	void setCellState(CellState t_state);
+	void addNeighbour(NodeData* t_node);
 
 	Vector2f getPosition();
 	CellState getCellState();
+	vector<NodeData*>* getNeighbours();
+	int getIndex();
 private:
 	int m_index;
 	Vector2f m_position;
 	CellState m_cellState;
 	bool m_marked;
+	vector<NodeData*>* m_neighbours;
 };

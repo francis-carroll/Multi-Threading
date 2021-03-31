@@ -21,14 +21,21 @@ public:
 	Grid(GridSize t_size);
 	~Grid();
 
-	vector<NodeData*> getNodes();
+	vector<NodeData*>* getNodes();
 	GridSize getGridSize();
+	Vector2i getRowCol(int t_nodeIndex);
+	int getIndex(int t_row, int t_col);
 private:
 	void setupGrid();
 	void thirtyGrid();
 	void hundredGrid();
 	void thousandGrid();
+	void setupNodeNeighbours();
+	void mooreNeighbours();
+	void vonNewmanNeighbours();
 
 	GridSize m_gridSize;
-	vector<NodeData*> m_nodes;
+	int m_cellCount;
+	vector<NodeData*>* m_nodes;
+	vector<int> m_vonNewmanDirection;
 };
