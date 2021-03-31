@@ -5,6 +5,7 @@
 #include <Globals.h>
 #include <Player.h>
 #include <AStar.h>
+#include <Enemy.h>
 
 using namespace std;
 using namespace sf;
@@ -28,4 +29,5 @@ private:
 	Grid* m_grid;
 	RectangleShape m_shape;
 	Player* m_player;
+	Enemy* m_enemy;
 };

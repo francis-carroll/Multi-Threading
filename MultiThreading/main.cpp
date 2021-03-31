@@ -29,6 +29,5 @@ int main()
 
 	delete game;
 
-	system("pause");
-	return 0;
+	cin.get();
 }

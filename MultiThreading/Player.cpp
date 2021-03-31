@@ -13,6 +13,7 @@ Player::~Player()
 void Player::setOccupyingTile(NodeData* t_node)
 {
 	m_occupyingTile = t_node;
+	m_occupyingTile->setCellState(CellState::Occupied);
 }
 
 NodeData* Player::getOccupiedNode()
