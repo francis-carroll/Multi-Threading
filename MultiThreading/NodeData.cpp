@@ -1,11 +1,14 @@
 #include "NodeData.h"
+#include <Grid.h>
 
 NodeData::NodeData(int t_index, Vector2f t_position) : 
 	m_position(t_position),
 	m_index(t_index),
 	m_marked(false),
 	m_cellState(CellState::None),
-	m_neighbours(new vector<NodeData*>())
+	m_neighbours(new vector<NodeData*>()),
+	pathCost(INT32_MAX),
+	heuristic(INT32_MAX)
 {
 }
 

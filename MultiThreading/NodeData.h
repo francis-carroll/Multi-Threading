@@ -10,9 +10,9 @@ enum class CellState
 {
 	None,
 	Occupied,
-	Wall
+	Wall,
+	Path
 };
-
 
 class NodeData
 {
@@ -27,10 +27,22 @@ public:
 	CellState getCellState();
 	vector<NodeData*>* getNeighbours();
 	int getIndex();
+
+	int pathCost;
+	int heuristic;
+	NodeData* prev;
+	bool m_marked;
 private:
 	int m_index;
 	Vector2f m_position;
 	CellState m_cellState;
-	bool m_marked;
 	vector<NodeData*>* m_neighbours;
+};
+
+struct CompareFn
+{
+	float operator()(NodeData const* node1, NodeData const* node2)
+	{
+		return (node1->pathCost + node1->heuristic) > (node2->pathCost + node2->heuristic);
+	}
 };

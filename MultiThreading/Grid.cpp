@@ -27,14 +27,19 @@ GridSize Grid::getGridSize()
 	return m_gridSize;
 }
 
-Vector2i Grid::getRowCol(int t_nodeIndex)
+int Grid::getCellCount()
 {
-	return Vector2i(t_nodeIndex / int(m_cellCount), t_nodeIndex % int(m_cellCount));
+	return m_cellCount;
 }
 
-int Grid::getIndex(int t_row, int t_col)
+Vector2i Grid::getRowCol(int t_nodeIndex, int t_cellCount)
 {
-	return int(t_col + (t_row * m_cellCount));
+	return Vector2i(t_nodeIndex / int(t_cellCount), t_nodeIndex % int(t_cellCount));
+}
+
+int Grid::getIndex(int t_row, int t_col, int t_cellCount)
+{
+	return int(t_col + (t_row * t_cellCount));
 }
 
 void Grid::setupGrid()
@@ -146,7 +151,7 @@ void Grid::mooreNeighbours()
 			//execpt 4, the current node
 			if (d == 4) { continue; }
 
-			Vector2i temp = getRowCol(node->getIndex());
+			Vector2i temp = getRowCol(node->getIndex(), m_cellCount);
 			int neighbourRow = temp.x + ((d % 3) - 1); //calculates neighbour rows
 			int neighbourCol = temp.y + ((d / 3) - 1); //calculates neighbour columns
 
@@ -154,7 +159,7 @@ void Grid::mooreNeighbours()
 			if (neighbourRow >= 0 && neighbourRow < m_cellCount &&
 				neighbourCol >= 0 && neighbourCol < m_cellCount)
 			{
-				int nodeIndex = getIndex(neighbourRow, neighbourCol);
+				int nodeIndex = getIndex(neighbourRow, neighbourCol, m_cellCount);
 				//add the neighbour
 				node->addNeighbour(m_nodes->at(nodeIndex));
 			}
@@ -168,7 +173,7 @@ void Grid::vonNewmanNeighbours()
 		//for each direction of the node
 		for (int d : m_vonNewmanDirection) {
 
-			Vector2i temp = getRowCol(node->getIndex());
+			Vector2i temp = getRowCol(node->getIndex(), m_cellCount);
 			int neighbourRow = temp.x + ((d % 3) - 1); //calculates neighbour rows
 			int neighbourCol = temp.y + ((d / 3) - 1); //calculates neighbour columns
 
@@ -176,7 +181,7 @@ void Grid::vonNewmanNeighbours()
 			if (neighbourRow >= 0 && neighbourRow < m_cellCount &&
 				neighbourCol >= 0 && neighbourCol < m_cellCount)
 			{
-				int nodeIndex = getIndex(neighbourRow, neighbourCol);
+				int nodeIndex = getIndex(neighbourRow, neighbourCol, m_cellCount);
 				//add the neighbour
 				node->addNeighbour(m_nodes->at(nodeIndex));
 			}

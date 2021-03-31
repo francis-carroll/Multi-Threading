@@ -4,6 +4,7 @@
 #include <iostream>
 #include <Globals.h>
 #include <NodeData.h>
+#include <Player.h>
 
 using namespace std;
 using namespace sf;
@@ -23,8 +24,10 @@ public:
 
 	vector<NodeData*>* getNodes();
 	GridSize getGridSize();
-	Vector2i getRowCol(int t_nodeIndex);
-	int getIndex(int t_row, int t_col);
+	int getCellCount();
+
+	static Vector2i getRowCol(int t_nodeIndex, int t_cellCount);
+	static int getIndex(int t_row, int t_col, int t_cellCount);
 private:
 	void setupGrid();
 	void thirtyGrid();
@@ -38,4 +41,5 @@ private:
 	int m_cellCount;
 	vector<NodeData*>* m_nodes;
 	vector<int> m_vonNewmanDirection;
+	Player* m_player;
 };

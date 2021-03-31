@@ -3,6 +3,8 @@
 #include <SFML/Graphics.hpp>
 #include <Grid.h>
 #include <Globals.h>
+#include <Player.h>
+#include <AStar.h>
 
 using namespace std;
 using namespace sf;
@@ -23,6 +25,7 @@ private:
 	void setupRender();
 
 	RenderWindow* m_window;
-	Grid* grid;
+	Grid* m_grid;
 	RectangleShape m_shape;
+	Player* m_player;
 };

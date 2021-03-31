@@ -1,9 +1,14 @@
 #include "Game.h"
 
 Game::Game() :
-	m_window(new RenderWindow(VideoMode(SCREEN_SIZE.x, SCREEN_SIZE.y, 32), "MultiThreaded AStar Ambush Sim", Style::Default))
+	m_window(new RenderWindow(VideoMode(SCREEN_SIZE.x, SCREEN_SIZE.y, 32), "MultiThreaded AStar Ambush Sim", Style::Default)),
+	m_player(new Player())
 {
 	setup(GridSize::HundredX);
+	m_player->setOccupyingTile(m_grid->getNodes()->at(0));
+	m_grid->getNodes()->at(0)->setCellState(CellState::Occupied);
+	m_grid->getNodes()->at(9234)->setCellState(CellState::Occupied);
+	vector<NodeData*>* nodes = AStar::astar(m_grid, m_player->getOccupiedNode(), m_grid->getNodes()->at(9234));
 }
 
 Game::~Game()
@@ -41,11 +46,15 @@ void Game::render()
 {
 	m_window->clear();
 
-	vector<NodeData*>* nodes = grid->getNodes();
+	vector<NodeData*>* nodes = m_grid->getNodes();
 	for (NodeData* n : *nodes)
 	{
 		if (n->getCellState() == CellState::Wall)
 			m_shape.setFillColor(Color::Black);
+		else if (n->getCellState() == CellState::Occupied)
+			m_shape.setFillColor(Color::Red);
+		else if (n->getCellState() == CellState::Path)
+			m_shape.setFillColor(Color::Yellow);
 		else
 			m_shape.setFillColor(Color::Green);
 
@@ -80,17 +89,17 @@ void Game::processEvents()
 
 void Game::setup(GridSize t_size)
 {
-	if (grid != nullptr)
-		delete grid;
+	if (m_grid != nullptr)
+		delete m_grid;
 
-	grid = new Grid(t_size);
+	m_grid = new Grid(t_size);
 	setupRender();
 }
 
 void Game::setupRender()
 {
 	m_shape.setFillColor(Color::Green);
-	switch (grid->getGridSize())
+	switch (m_grid->getGridSize())
 	{
 	case GridSize::ThirtyX:
 		m_shape.setSize(Vector2f(SCREEN_SIZE.x / THIRTY_X, SCREEN_SIZE.y / THIRTY_X));
