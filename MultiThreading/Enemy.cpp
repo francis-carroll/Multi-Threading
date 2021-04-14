@@ -17,7 +17,6 @@ Enemy::~Enemy()
 void Enemy::setOccupyingTile(NodeData* t_node)
 {
     m_occupyingTile = t_node;
-    m_occupyingTile->setCellState(CellState::Occupied);
 }
 
 void Enemy::setPath(vector<NodeData*>* t_path)
@@ -38,9 +37,7 @@ void Enemy::update(Time t_dt)
     {
         if (m_timer >= 0.01f)
         {
-            m_path->at(m_current)->setCellState(CellState::None);
             m_current--;
-            m_path->at(m_current)->setCellState(CellState::Occupied);
             m_occupyingTile = m_path->at(m_current);
             m_timer = 0.0f;
         }

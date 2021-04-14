@@ -24,10 +24,12 @@ private:
 
 	void setup(GridSize t_size);
 	void setupRender();
+	void initEnemies();
+	Enemy* createEnemy(int t_tileID);
 
 	RenderWindow* m_window;
 	Grid* m_grid;
 	RectangleShape m_shape;
 	Player* m_player;
-	Enemy* m_enemy;
+	vector<Enemy*>* m_enemies;
 };

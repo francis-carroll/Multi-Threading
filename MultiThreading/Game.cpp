@@ -3,19 +3,18 @@
 Game::Game() :
 	m_window(new RenderWindow(VideoMode(SCREEN_SIZE.x, SCREEN_SIZE.y, 32), "MultiThreaded AStar Ambush Sim", Style::Default)),
 	m_player(new Player()),
-	m_enemy(new Enemy())
+	m_enemies(new vector<Enemy*>())
 {
 	setup(GridSize::HundredX);
 	m_player->setOccupyingTile(m_grid->getNodes()->at(0));
-	m_enemy->setOccupyingTile(m_grid->getNodes()->at(10));
-	m_enemy->setPath(AStar::astar(m_grid, m_player->getOccupiedNode(), m_enemy->getOccupiedNode()));
+	initEnemies();
 }
 
 Game::~Game()
 {
 	delete m_grid;
 	delete m_player;
-	delete m_enemy;
+	delete m_enemies;
 	delete m_window;
 }
 
@@ -43,7 +42,8 @@ void Game::run()
 
 void Game::update(Time t_deltaTime)
 {
-	m_enemy->update(t_deltaTime);
+	for(Enemy* e : *m_enemies)
+		e->update(t_deltaTime);
 }
 
 void Game::render()
@@ -58,12 +58,19 @@ void Game::render()
 		else if (n->getCellState() == CellState::Occupied)
 			m_shape.setFillColor(Color::Red);
 		else if (n->getCellState() == CellState::Path)
-			m_shape.setFillColor(Color::Blue);
+			m_shape.setFillColor(Color::Yellow);
 		else
 			m_shape.setFillColor(Color::Green);
 
 		m_shape.setPosition(n->getPosition());
 
+		m_window->draw(m_shape);
+	}
+
+	for (Enemy* e : *m_enemies)
+	{
+		m_shape.setFillColor(Color::Blue);
+		m_shape.setPosition(e->getOccupiedNode()->getPosition());
 		m_window->draw(m_shape);
 	}
 
@@ -126,4 +133,23 @@ void Game::setupRender()
 	default:
 		break;
 	}
+}
+
+void Game::initEnemies()
+{
+	m_enemies->push_back(createEnemy(1999));
+	m_enemies->push_back(createEnemy(9999));
+	m_enemies->push_back(createEnemy(4999));
+	m_enemies->push_back(createEnemy(5999));
+	m_enemies->push_back(createEnemy(6799));
+	m_enemies->push_back(createEnemy(5899));
+	m_enemies->push_back(createEnemy(9799));
+}
+
+Enemy* Game::createEnemy(int t_tileID)
+{
+	Enemy* e = new Enemy();
+	e->setOccupyingTile(m_grid->getNodes()->at(t_tileID));
+	e->setPath(AStar::astar(m_grid, m_player->getOccupiedNode(), e->getOccupiedNode()));
+	return e;
 }

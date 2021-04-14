@@ -3,10 +3,18 @@
 vector<NodeData*>* AStar::astar(Grid* t_grid, NodeData* t_player , NodeData* t_enemy)
 {
 	std::priority_queue<NodeData*, std::vector<NodeData*>, CompareFn>* open = new std::priority_queue<NodeData*, std::vector<NodeData*>, CompareFn>();
-	queue<NodeData*>* closed = new queue<NodeData*>();
+	vector<NodeData*>* closed = new vector<NodeData*>();
 
-	t_enemy->pathCost = 0;
-	t_enemy->heuristic = calculateHeuristic(t_player, t_enemy, t_grid->getCellCount());
+	for (NodeData* data : *t_grid->getNodes())
+	{
+		data->setMarked(false);
+		data->setPrevious(nullptr);
+		data->m_pathCost = INT32_MAX;
+		data->m_heuristic = INT32_MAX;
+	}
+
+	t_enemy->m_pathCost = 0;
+	t_enemy->m_heuristic = calculateHeuristic(t_player, t_enemy, t_grid->getCellCount());
 	open->push(t_enemy);
 
 	while (open->size() > 0)
@@ -21,25 +29,23 @@ vector<NodeData*>* AStar::astar(Grid* t_grid, NodeData* t_player , NodeData* t_e
 		}
 
 		open->pop();
-		closed->push(current);
+		closed->push_back(current);
 
 		for (NodeData* node : *current->getNeighbours())
 		{
 			if (node->getCellState() == CellState::Wall)
 				continue;
 
-			float tentG = current->pathCost + 1;
+			float tentG = current->m_pathCost + 1 /*+ (node->getTileWeight() * 2)*/;
 
-			if (tentG < node->pathCost)
+			if (tentG < node->m_pathCost && !node->getMarked())
 			{
-				node->prev = current;
-				node->pathCost = tentG;
-				node->heuristic = calculateHeuristic(t_player, node, t_grid->getCellCount());
-				if (!node->m_marked)
-				{
-					node->m_marked = true;
-					open->push(node);
-				}
+				current->setTileWeight(current->getTileWeight() + 1);
+				node->setPrevious(current);
+				node->m_pathCost = tentG;
+				node->m_heuristic = calculateHeuristic(t_player, node, t_grid->getCellCount());
+				node->setMarked(true);
+				open->push(node);
 			}
 		}
 	}
@@ -56,14 +62,14 @@ float AStar::calculateHeuristic(NodeData* t_goal, NodeData* t_current, int t_cel
 vector<NodeData*>* AStar::constructPath(NodeData* t_goal)
 {
 	vector<NodeData*>* path = new vector<NodeData*>();
-	NodeData* current = t_goal->prev;
+	NodeData* current = t_goal->getPrevious();
 	
 	while(current != nullptr)
 	{
 		path->push_back(current);
 		if (current->getCellState() == CellState::None)
 			current->setCellState(CellState::Path);
-		current = current->prev;
+		current = current->getPrevious();
 	}
 	return path;
 }

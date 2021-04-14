@@ -7,8 +7,10 @@ NodeData::NodeData(int t_index, Vector2f t_position) :
 	m_marked(false),
 	m_cellState(CellState::None),
 	m_neighbours(new vector<NodeData*>()),
-	pathCost(INT32_MAX),
-	heuristic(INT32_MAX)
+	m_pathCost(INT32_MAX),
+	m_heuristic(INT32_MAX),
+	m_tileWeight(0),
+	m_previous(nullptr)
 {
 }
 
@@ -25,6 +27,21 @@ void NodeData::setCellState(CellState t_state)
 void NodeData::addNeighbour(NodeData* t_node)
 {
 	m_neighbours->push_back(t_node);
+}
+
+void NodeData::setTileWeight(int t_tileWeight)
+{
+	m_tileWeight = t_tileWeight;
+}
+
+void NodeData::setMarked(bool t_marked)
+{
+	m_marked = t_marked;
+}
+
+void NodeData::setPrevious(NodeData* t_data)
+{
+	m_previous = t_data;
 }
 
 Vector2f NodeData::getPosition()
@@ -45,4 +62,19 @@ vector<NodeData*>* NodeData::getNeighbours()
 int NodeData::getIndex()
 {
 	return m_index;
+}
+
+int NodeData::getTileWeight()
+{
+	return m_tileWeight;
+}
+
+bool NodeData::getMarked()
+{
+	return m_marked;
+}
+
+NodeData* NodeData::getPrevious()
+{
+	return m_previous;
 }

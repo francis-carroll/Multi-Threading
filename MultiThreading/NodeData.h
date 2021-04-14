@@ -22,27 +22,34 @@ public:
 
 	void setCellState(CellState t_state);
 	void addNeighbour(NodeData* t_node);
+	void setTileWeight(int t_tileWeight);
+	void setMarked(bool t_marked);
+	void setPrevious(NodeData* t_data);
 
 	Vector2f getPosition();
 	CellState getCellState();
 	vector<NodeData*>* getNeighbours();
 	int getIndex();
+	int getTileWeight();
+	bool getMarked();
+	NodeData* getPrevious();
 
-	int pathCost;
-	int heuristic;
-	NodeData* prev;
-	bool m_marked;
+	int m_pathCost;
+	int m_heuristic;
+	int m_tileWeight;
 private:
 	int m_index;
 	Vector2f m_position;
 	CellState m_cellState;
 	vector<NodeData*>* m_neighbours;
+	NodeData* m_previous;
+	bool m_marked;
 };
 
 struct CompareFn
 {
 	float operator()(NodeData const* node1, NodeData const* node2)
 	{
-		return (node1->pathCost + node1->heuristic) > (node2->pathCost + node2->heuristic);
+		return (node1->m_pathCost + node1->m_heuristic + (node1->m_tileWeight * 2)) > (node2->m_pathCost + node2->m_heuristic + (node2->m_tileWeight * 2));
 	}
 };
