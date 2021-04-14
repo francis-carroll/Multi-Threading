@@ -50,6 +50,6 @@ struct CompareFn
 {
 	float operator()(NodeData const* node1, NodeData const* node2)
 	{
-		return (node1->m_pathCost + node1->m_heuristic + (node1->m_tileWeight * 2)) > (node2->m_pathCost + node2->m_heuristic + (node2->m_tileWeight * 2));
+		return (node1->m_pathCost + node1->m_heuristic + (node1->m_tileWeight * 5)) > (node2->m_pathCost + node2->m_heuristic + (node2->m_tileWeight * 5));
 	}
 };

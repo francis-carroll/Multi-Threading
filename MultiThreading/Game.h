@@ -32,4 +32,8 @@ private:
 	RectangleShape m_shape;
 	Player* m_player;
 	vector<Enemy*>* m_enemies;
+	Vector2f m_spawnIDStart;
+	Vector2f m_spawnIDEnd;
+	int MAX_ENEMIES;
+	int CELL_COUNT;
 };

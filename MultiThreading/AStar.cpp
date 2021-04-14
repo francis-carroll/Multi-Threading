@@ -36,7 +36,7 @@ vector<NodeData*>* AStar::astar(Grid* t_grid, NodeData* t_player , NodeData* t_e
 			if (node->getCellState() == CellState::Wall)
 				continue;
 
-			float tentG = current->m_pathCost + 1 /*+ (node->getTileWeight() * 2)*/;
+			float tentG = current->m_pathCost + 1;
 
 			if (tentG < node->m_pathCost && !node->getMarked())
 			{
@@ -51,7 +51,7 @@ vector<NodeData*>* AStar::astar(Grid* t_grid, NodeData* t_player , NodeData* t_e
 	}
 	delete closed;
 	delete open;
-	return nullptr;
+	return new vector<NodeData*>();
 }
 
 float AStar::calculateHeuristic(NodeData* t_goal, NodeData* t_current, int t_cellCount)

@@ -3,11 +3,9 @@
 Game::Game() :
 	m_window(new RenderWindow(VideoMode(SCREEN_SIZE.x, SCREEN_SIZE.y, 32), "MultiThreaded AStar Ambush Sim", Style::Default)),
 	m_player(new Player()),
-	m_enemies(new vector<Enemy*>())
+	m_enemies(nullptr)
 {
-	setup(GridSize::HundredX);
-	m_player->setOccupyingTile(m_grid->getNodes()->at(0));
-	initEnemies();
+	setup(GridSize::ThirtyX);
 }
 
 Game::~Game()
@@ -106,9 +104,18 @@ void Game::setup(GridSize t_size)
 {
 	if (m_grid != nullptr)
 		delete m_grid;
+	if (m_enemies != nullptr)
+	{
+		for (Enemy* e : *m_enemies)
+			delete e;
+		delete m_enemies;
+	}
 
 	m_grid = new Grid(t_size);
+	m_enemies = new vector<Enemy*>();
+	m_player->setOccupyingTile(m_grid->getNodes()->at(0));
 	setupRender();
+	initEnemies();
 }
 
 void Game::setupRender()
@@ -120,15 +127,27 @@ void Game::setupRender()
 		m_shape.setSize(Vector2f(SCREEN_SIZE.x / THIRTY_X, SCREEN_SIZE.y / THIRTY_X));
 		m_shape.setOutlineThickness(1.0f);
 		m_shape.setOutlineColor(Color::Black);
+		m_spawnIDStart = Vector2f(20, 20);
+		m_spawnIDEnd = Vector2f(25, 25);
+		MAX_ENEMIES = 5;
+		CELL_COUNT = THIRTY_X;
 		break;
 	case GridSize::HundredX:
 		m_shape.setSize(Vector2f(SCREEN_SIZE.x / HUNDRED_X, SCREEN_SIZE.y / HUNDRED_X));
 		m_shape.setOutlineThickness(1.0f);
 		m_shape.setOutlineColor(Color::Black);
+		m_spawnIDStart = Vector2f(65, 65);
+		m_spawnIDEnd = Vector2f(80, 80);
+		MAX_ENEMIES = 50;
+		CELL_COUNT = HUNDRED_X;
 		break;
 	case GridSize::ThousandX:
 		m_shape.setSize(Vector2f(SCREEN_SIZE.x / THOUSAND_X, SCREEN_SIZE.y / THOUSAND_X));
 		m_shape.setOutlineThickness(0.0f);
+		m_spawnIDStart = Vector2f(700, 700);
+		m_spawnIDEnd = Vector2f(800, 800);
+		MAX_ENEMIES = 10;
+		CELL_COUNT = THOUSAND_X;
 		break;
 	default:
 		break;
@@ -137,13 +156,19 @@ void Game::setupRender()
 
 void Game::initEnemies()
 {
-	m_enemies->push_back(createEnemy(1999));
-	m_enemies->push_back(createEnemy(9999));
-	m_enemies->push_back(createEnemy(4999));
-	m_enemies->push_back(createEnemy(5999));
-	m_enemies->push_back(createEnemy(6799));
-	m_enemies->push_back(createEnemy(5899));
-	m_enemies->push_back(createEnemy(9799));
+	for (int i = 0; i < MAX_ENEMIES;)
+	{
+		Vector2i rowCol = Vector2i(randomInt(m_spawnIDStart.x, m_spawnIDEnd.x), randomInt(m_spawnIDStart.y, m_spawnIDEnd.y));
+		if (m_grid->getNodes()->at(m_grid->getIndex(rowCol.x, rowCol.y, CELL_COUNT))->getCellState() != CellState::Wall)
+		{
+			m_enemies->push_back(createEnemy(m_grid->getIndex(rowCol.x, rowCol.y, CELL_COUNT)));
+			i++;
+		}
+		else
+		{
+			rowCol = Vector2i(randomInt(m_spawnIDStart.x, m_spawnIDEnd.x), randomInt(m_spawnIDStart.y, m_spawnIDEnd.y));
+		}
+	}
 }
 
 Enemy* Game::createEnemy(int t_tileID)

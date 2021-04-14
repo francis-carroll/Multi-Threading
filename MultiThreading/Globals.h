@@ -14,3 +14,11 @@ static float directDistance(sf::Vector2f t_vector1, sf::Vector2f t_vector2)
 {
 	return (t_vector2.x - t_vector1.x) + (t_vector2.y - t_vector1.y);
 }
+
+static int randomInt(int t_min, int t_max)
+{
+	if (t_max > t_min) {
+		return (rand() % (t_max - t_min + 1)) + t_min;
+	}
+	return 1;
+}
