@@ -6,6 +6,8 @@
 #include <Player.h>
 #include <AStar.h>
 #include <Enemy.h>
+#include <thread>
+#include <mutex>
 
 using namespace std;
 using namespace sf;
@@ -17,15 +19,17 @@ public:
 	~Game();
 	void run();
 	void update(Time t_deltaTime);
-	void render();
+	static void render(Game* t_game);
 	void processEvents();
 private:
 	const Vector2f SIZE = Vector2f(1.0f, 1.0f);
 
-	void setup(GridSize t_size);
+	static void setup(Game* t_game, GridSize t_size);
 	void setupRender();
-	void initEnemies();
+	static void renderGrid(Game* t_game);
+	static void initEnemies(Game* t_game);
 	Enemy* createEnemy(int t_tileID);
+	static void setupRenderTexure(Game* t_game);
 
 	RenderWindow* m_window;
 	Grid* m_grid;
@@ -36,4 +40,7 @@ private:
 	Vector2f m_spawnIDEnd;
 	int MAX_ENEMIES;
 	int CELL_COUNT;
+	mutex* m_mutex;
+	thread* m_setup;
+	RenderTexture* m_texture;
 };

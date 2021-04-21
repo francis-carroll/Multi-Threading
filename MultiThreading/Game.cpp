@@ -3,9 +3,14 @@
 Game::Game() :
 	m_window(new RenderWindow(VideoMode(SCREEN_SIZE.x, SCREEN_SIZE.y, 32), "MultiThreaded AStar Ambush Sim", Style::Default)),
 	m_player(new Player()),
-	m_enemies(nullptr)
+	m_enemies(nullptr),
+	m_mutex(new mutex),
+	m_texture(new RenderTexture)
 {
-	setup(GridSize::ThirtyX);
+	Game::setup(this, GridSize::HundredX);
+	/*m_setup = new thread(&Game::setup, this, GridSize::ThousandX);
+	m_setup->join();*/
+	m_window->setActive(false);
 }
 
 Game::~Game()
@@ -34,7 +39,7 @@ void Game::run()
 			timeSinceLastUpdate -= timePerFrame;
 			clock.restart();
 		}
-		render();
+		render(this);
 	}
 }
 
@@ -44,35 +49,24 @@ void Game::update(Time t_deltaTime)
 		e->update(t_deltaTime);
 }
 
-void Game::render()
+void Game::render(Game* t_game)
 {
-	m_window->clear();
+	srand((unsigned)time(nullptr));
+	t_game->m_window->clear();
 
-	vector<NodeData*>* nodes = m_grid->getNodes();
-	for (NodeData* n : *nodes)
+	//t_game->renderGrid(t_game);
+	Sprite s(t_game->m_texture->getTexture());
+	t_game->m_window->draw(s);
+
+	for (Enemy* e : *t_game->m_enemies)
 	{
-		if (n->getCellState() == CellState::Wall)
-			m_shape.setFillColor(Color::Black);
-		else if (n->getCellState() == CellState::Occupied)
-			m_shape.setFillColor(Color::Red);
-		else if (n->getCellState() == CellState::Path)
-			m_shape.setFillColor(Color::Yellow);
-		else
-			m_shape.setFillColor(Color::Green);
-
-		m_shape.setPosition(n->getPosition());
-
-		m_window->draw(m_shape);
+		//m_shape.setFillColor(Color(rand()%255, rand() % 255, rand() % 255));
+		t_game->m_shape.setFillColor(Color::Blue);
+		t_game->m_shape.setPosition(e->getOccupiedNode()->getPosition());
+		t_game->m_window->draw(t_game->m_shape);
 	}
 
-	for (Enemy* e : *m_enemies)
-	{
-		m_shape.setFillColor(Color::Blue);
-		m_shape.setPosition(e->getOccupiedNode()->getPosition());
-		m_window->draw(m_shape);
-	}
-
-	m_window->display();
+	t_game->m_window->display();
 }
 
 void Game::processEvents()
@@ -88,11 +82,11 @@ void Game::processEvents()
 		if (event.type == event.KeyPressed)
 		{
 			if (event.key.code == Keyboard::Num1)
-				setup(GridSize::ThirtyX);
+				setup(this, GridSize::ThirtyX);
 			else if (event.key.code == Keyboard::Num2)
-				setup(GridSize::HundredX);
+				setup(this, GridSize::HundredX);
 			else if (event.key.code == Keyboard::Num3)
-				setup(GridSize::ThousandX);
+				setup(this, GridSize::ThousandX);
 
 			if(event.key.code == Keyboard::Escape)
 				m_window->close();
@@ -100,22 +94,24 @@ void Game::processEvents()
 	}
 }
 
-void Game::setup(GridSize t_size)
+void Game::setup(Game* t_game, GridSize t_size)
 {
-	if (m_grid != nullptr)
-		delete m_grid;
-	if (m_enemies != nullptr)
+	if (t_game->m_grid != nullptr)
+		delete t_game->m_grid;
+	if (t_game->m_enemies != nullptr)
 	{
-		for (Enemy* e : *m_enemies)
+		for (Enemy* e : *t_game->m_enemies)
 			delete e;
-		delete m_enemies;
+		delete t_game->m_enemies;
 	}
 
-	m_grid = new Grid(t_size);
-	m_enemies = new vector<Enemy*>();
-	m_player->setOccupyingTile(m_grid->getNodes()->at(0));
-	setupRender();
-	initEnemies();
+	t_game->m_grid = new Grid(t_size);
+	t_game->m_enemies = new vector<Enemy*>();
+	t_game->m_player->setOccupyingTile(t_game->m_grid->getNodes()->at(0));
+	t_game->setupRender();
+	t_game->setupRenderTexure(t_game);
+	std::thread t(&Game::initEnemies, t_game);
+	t.join();
 }
 
 void Game::setupRender()
@@ -138,7 +134,7 @@ void Game::setupRender()
 		m_shape.setOutlineColor(Color::Black);
 		m_spawnIDStart = Vector2f(65, 65);
 		m_spawnIDEnd = Vector2f(80, 80);
-		MAX_ENEMIES = 50;
+		MAX_ENEMIES = 200;
 		CELL_COUNT = HUNDRED_X;
 		break;
 	case GridSize::ThousandX:
@@ -154,21 +150,45 @@ void Game::setupRender()
 	}
 }
 
-void Game::initEnemies()
+void Game::renderGrid(Game* t_game)
 {
-	for (int i = 0; i < MAX_ENEMIES;)
+	//vector<NodeData*>* nodes = t_game->m_grid->getNodes();
+	//for (NodeData* n : *nodes)
+	//{
+	//	t_game->m_mutex->lock();
+	//	if (n->getCellState() == CellState::Wall)
+	//		t_game->m_shape.setFillColor(Color::Black);
+	//	else if (n->getCellState() == CellState::Occupied)
+	//		t_game->m_shape.setFillColor(Color::Red);
+	//	else if (n->getCellState() == CellState::Path)
+	//		t_game->m_shape.setFillColor(Color::Yellow);
+	//	else
+	//		t_game->m_shape.setFillColor(Color(rand() % 255, rand() % 255, rand() % 255));
+	//		//t_game->m_shape.setFillColor(Color::Green);
+	//	
+	//	t_game->m_shape.setPosition(n->getPosition());
+
+	//	t_game->m_window->draw(t_game->m_shape);
+	//	t_game->m_mutex->unlock();
+	//}
+}
+
+void Game::initEnemies(Game* t_game)
+{
+	for (int i = 0; i < t_game->MAX_ENEMIES;)
 	{
-		Vector2i rowCol = Vector2i(randomInt(m_spawnIDStart.x, m_spawnIDEnd.x), randomInt(m_spawnIDStart.y, m_spawnIDEnd.y));
-		if (m_grid->getNodes()->at(m_grid->getIndex(rowCol.x, rowCol.y, CELL_COUNT))->getCellState() != CellState::Wall)
+		Vector2i rowCol = Vector2i(randomInt(t_game->m_spawnIDStart.x, t_game->m_spawnIDEnd.x), randomInt(t_game->m_spawnIDStart.y, t_game->m_spawnIDEnd.y));
+		if (t_game->m_grid->getNodes()->at(t_game->m_grid->getIndex(rowCol.x, rowCol.y, t_game->CELL_COUNT))->getCellState() != CellState::Wall)
 		{
-			m_enemies->push_back(createEnemy(m_grid->getIndex(rowCol.x, rowCol.y, CELL_COUNT)));
+			t_game->m_enemies->push_back(t_game->createEnemy(t_game->m_grid->getIndex(rowCol.x, rowCol.y, t_game->CELL_COUNT)));
 			i++;
 		}
 		else
 		{
-			rowCol = Vector2i(randomInt(m_spawnIDStart.x, m_spawnIDEnd.x), randomInt(m_spawnIDStart.y, m_spawnIDEnd.y));
+			rowCol = Vector2i(randomInt(t_game->m_spawnIDStart.x, t_game->m_spawnIDEnd.x), randomInt(t_game->m_spawnIDStart.y, t_game->m_spawnIDEnd.y));
 		}
 	}
+	setupRenderTexure(t_game);
 }
 
 Enemy* Game::createEnemy(int t_tileID)
@@ -177,4 +197,31 @@ Enemy* Game::createEnemy(int t_tileID)
 	e->setOccupyingTile(m_grid->getNodes()->at(t_tileID));
 	e->setPath(AStar::astar(m_grid, m_player->getOccupiedNode(), e->getOccupiedNode()));
 	return e;
+}
+
+void Game::setupRenderTexure(Game* t_game)
+{
+	t_game->m_texture->create(SCREEN_SIZE.x, SCREEN_SIZE.y);
+
+	t_game->m_texture->clear();
+
+	vector<NodeData*>* nodes = t_game->m_grid->getNodes();
+	for (NodeData* n : *nodes)
+	{
+		if (n->getCellState() == CellState::Wall)
+			t_game->m_shape.setFillColor(Color::Black);
+		else if (n->getCellState() == CellState::Occupied)
+			t_game->m_shape.setFillColor(Color::Red);
+		else if (n->getCellState() == CellState::Path)
+			t_game->m_shape.setFillColor(Color::Yellow);
+		else
+			//t_game->m_shape.setFillColor(Color(rand() % 255, rand() % 255, rand() % 255));
+			t_game->m_shape.setFillColor(Color::Green);
+
+		t_game->m_shape.setPosition(n->getPosition());
+
+		t_game->m_texture->draw(t_game->m_shape);
+	}
+
+	t_game->m_texture->display();
 }

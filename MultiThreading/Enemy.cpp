@@ -35,7 +35,7 @@ void Enemy::update(Time t_dt)
 
     if (!m_finished)
     {
-        if (m_timer >= 0.01f)
+        if (m_timer >= 0.1f)
         {
             m_current--;
             m_occupyingTile = m_path->at(m_current);
