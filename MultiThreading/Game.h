@@ -19,17 +19,17 @@ public:
 	~Game();
 	void run();
 	void update(Time t_deltaTime);
-	static void render(Game* t_game);
+	void render();
 	void processEvents();
 private:
 	const Vector2f SIZE = Vector2f(1.0f, 1.0f);
 
-	static void setup(Game* t_game, GridSize t_size);
+	void setup(GridSize t_size);
 	void setupRender();
-	static void renderGrid(Game* t_game);
-	static void initEnemies(Game* t_game);
+	void renderGrid();
+	void initEnemies();
 	Enemy* createEnemy(int t_tileID);
-	static void setupRenderTexure(Game* t_game);
+	void setupRenderTexure();
 
 	RenderWindow* m_window;
 	Grid* m_grid;
