@@ -39,8 +39,8 @@ void Game::run()
 			update(timePerFrame);
 			timeSinceLastUpdate -= timePerFrame;
 			clock.restart();
+			fps++;
 		}
-		fps++;
 		if (time.asSeconds() >= 1.0f)
 		{
 			cout << fps << endl;
@@ -61,7 +61,6 @@ void Game::render()
 {
 	srand((unsigned)time(nullptr));
 	m_window->clear();
-
 	//t_game->renderGrid(t_game);
 	Sprite s(m_texture->getTexture());
 	m_window->draw(s);
@@ -141,7 +140,7 @@ void Game::setupRender()
 		m_shape.setOutlineColor(Color::Black);
 		m_spawnIDStart = Vector2f(65, 65);
 		m_spawnIDEnd = Vector2f(80, 80);
-		MAX_ENEMIES = 200;
+		MAX_ENEMIES = 50;
 		CELL_COUNT = HUNDRED_X;
 		break;
 	case GridSize::ThousandX:
@@ -149,7 +148,7 @@ void Game::setupRender()
 		m_shape.setOutlineThickness(0.0f);
 		m_spawnIDStart = Vector2f(700, 700);
 		m_spawnIDEnd = Vector2f(800, 800);
-		MAX_ENEMIES = 10;
+		MAX_ENEMIES = 200;
 		CELL_COUNT = THOUSAND_X;
 		break;
 	default:
@@ -185,7 +184,7 @@ void Game::initEnemies()
 		Vector2i rowCol = Vector2i(randomInt(m_spawnIDStart.x, m_spawnIDEnd.x), randomInt(m_spawnIDStart.y, m_spawnIDEnd.y));
 		if (m_grid->getNodes()->at(m_grid->getIndex(rowCol.x, rowCol.y, CELL_COUNT))->getCellState() != CellState::Wall)
 		{
-			m_enemies->push_back(createEnemy(m_grid->getIndex(rowCol.x, rowCol.y, CELL_COUNT)));
+			m_enemies->push_back(createEnemy(m_grid->getIndex(rowCol.x, rowCol.y, CELL_COUNT), i));
 			i++;
 		}
 		else
@@ -193,14 +192,18 @@ void Game::initEnemies()
 			rowCol = Vector2i(randomInt(m_spawnIDStart.x,m_spawnIDEnd.x), randomInt(m_spawnIDStart.y, m_spawnIDEnd.y));
 		}
 	}
+	for (Enemy* e : *m_enemies)
+	{
+		//m_tp.addTask([&] {Enemy::setPath(e, m_grid, m_player->getOccupiedNode()); });
+		m_tp.addTask(bind(&Enemy::setPath,e, m_grid, m_player->getOccupiedNode()));
+	}
 	setupRenderTexure();
 }
 
-Enemy* Game::createEnemy(int t_tileID)
+Enemy* Game::createEnemy(int t_tileID, int t_id)
 {
-	Enemy* e = new Enemy();
+	Enemy* e = new Enemy(t_id);
 	e->setOccupyingTile(m_grid->getNodes()->at(t_tileID));
-	//e->setPath(AStar::astar(m_grid, m_player->getOccupiedNode(), e->getOccupiedNode()));
 	return e;
 }
 

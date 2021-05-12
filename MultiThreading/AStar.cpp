@@ -1,57 +1,60 @@
 #include <AStar.h>
 
-vector<NodeData*>* AStar::astar(Grid* t_grid, NodeData* t_player , NodeData* t_enemy)
+void AStar::astar(Grid* t_grid, NodeData* t_player , NodeData* t_enemy, int t_id, vector<NodeData*>* t_path)
 {
-	std::priority_queue<NodeData*, std::vector<NodeData*>, CompareFn>* open = new std::priority_queue<NodeData*, std::vector<NodeData*>, CompareFn>();
-	vector<NodeData*>* closed = new vector<NodeData*>();
-
-	for (NodeData* data : *t_grid->getNodes())
+	
 	{
-		data->setMarked(false);
-		data->setPrevious(nullptr);
-		data->m_pathCost = INT32_MAX;
-		data->m_heuristic = INT32_MAX;
-	}
+		unique_lock<mutex> lock(Grid::m_mutex);
+		std::priority_queue<NodeData*, std::vector<NodeData*>, CompareFn>* open = new std::priority_queue<NodeData*, std::vector<NodeData*>, CompareFn>(CompareFn(t_id));
+		vector<NodeData*>* closed = new vector<NodeData*>();
 
-	t_enemy->m_pathCost = 0;
-	t_enemy->m_heuristic = calculateHeuristic(t_player, t_enemy, t_grid->getCellCount());
-	open->push(t_enemy);
-
-	while (open->size() > 0)
-	{
-		NodeData* current = open->top();
-
-		if (current == t_player)
+		for (NodeData* data : *t_grid->getNodes())
 		{
-			delete closed;
-			delete open;
-			return constructPath(t_player);
+			data->setMarked(false, t_id);
+			data->setPrevious(nullptr, t_id);
+			data->m_pathCost.at(t_id) = INT32_MAX;
+			data->m_heuristic = INT32_MAX;
 		}
 
-		open->pop();
-		closed->push_back(current);
+		t_enemy->m_pathCost.at(t_id) = 0;
+		t_enemy->m_heuristic = calculateHeuristic(t_player, t_enemy, t_grid->getCellCount());
+		open->push(t_enemy);
 
-		for (NodeData* node : *current->getNeighbours())
+
+		while (open->size() > 0)
 		{
-			if (node->getCellState() == CellState::Wall)
-				continue;
+			NodeData* current = open->top();
 
-			float tentG = current->m_pathCost + 1;
-
-			if (tentG < node->m_pathCost && !node->getMarked())
+			if (current == t_player)
 			{
-				current->setTileWeight(current->getTileWeight() + 1);
-				node->setPrevious(current);
-				node->m_pathCost = tentG;
-				node->m_heuristic = calculateHeuristic(t_player, node, t_grid->getCellCount());
-				node->setMarked(true);
-				open->push(node);
+				constructPath(t_player, t_id, t_path);
+				break;
+			}
+
+			open->pop();
+			closed->push_back(current);
+
+			for (NodeData* node : *current->getNeighbours())
+			{
+				if (node->getCellState() == CellState::Wall)
+					continue;
+
+				float tentG = current->m_pathCost.at(t_id) + 1;
+
+				if (tentG < node->m_pathCost.at(t_id) && !node->getMarked(t_id))
+				{
+					current->setTileWeight(current->getTileWeight() + 1);
+					node->setPrevious(current, t_id);
+					node->m_pathCost.at(t_id) = tentG;
+					node->m_heuristic = calculateHeuristic(t_player, node, t_grid->getCellCount());
+					node->setMarked(true, t_id);
+					open->push(node);
+				}
 			}
 		}
+		delete closed;
+		delete open;
 	}
-	delete closed;
-	delete open;
-	return new vector<NodeData*>();
 }
 
 float AStar::calculateHeuristic(NodeData* t_goal, NodeData* t_current, int t_cellCount)
@@ -59,17 +62,15 @@ float AStar::calculateHeuristic(NodeData* t_goal, NodeData* t_current, int t_cel
 	return abs(directDistance(t_goal->getPosition(), t_current->getPosition()));
 }
 
-vector<NodeData*>* AStar::constructPath(NodeData* t_goal)
+void AStar::constructPath(NodeData* t_goal, int t_id, vector<NodeData*>* t_path)
 {
-	vector<NodeData*>* path = new vector<NodeData*>();
-	NodeData* current = t_goal->getPrevious();
+	NodeData* current = t_goal->getPrevious(t_id);
 	
 	while(current != nullptr)
 	{
-		path->push_back(current);
+		t_path->push_back(current);
 		if (current->getCellState() == CellState::None)
 			current->setCellState(CellState::Path);
-		current = current->getPrevious();
+		current = current->getPrevious(t_id);
 	}
-	return path;
 }

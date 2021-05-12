@@ -5,6 +5,7 @@
 #include <Globals.h>
 #include <NodeData.h>
 #include <Player.h>
+#include <mutex>
 
 using namespace std;
 using namespace sf;
@@ -28,6 +29,7 @@ public:
 
 	static Vector2i getRowCol(int t_nodeIndex, int t_cellCount);
 	static int getIndex(int t_row, int t_col, int t_cellCount);
+	static mutex m_mutex;
 private:
 	void setupGrid();
 	void thirtyGrid();

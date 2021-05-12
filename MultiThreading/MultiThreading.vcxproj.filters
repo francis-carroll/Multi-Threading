@@ -31,6 +31,12 @@
     <Filter Include="Source Files\Entities">
       <UniqueIdentifier>{94c7b6a6-f71b-461b-b5ae-aa8c0955526b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Threading">
+      <UniqueIdentifier>{56a30f97-7ca6-444b-b972-823146b488af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Threading">
+      <UniqueIdentifier>{db15689c-81f2-4c1a-9273-c3c5012598a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -54,6 +60,9 @@
     <ClCompile Include="Player.cpp">
       <Filter>Source Files\Entities</Filter>
     </ClCompile>
+    <ClCompile Include="ThreadPool.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -76,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="Enemy.h">
       <Filter>Header Files\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadPool.h">
+      <Filter>Header Files\Threading</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

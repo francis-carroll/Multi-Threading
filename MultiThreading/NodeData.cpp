@@ -1,17 +1,22 @@
 #include "NodeData.h"
 #include <Grid.h>
 
-NodeData::NodeData(int t_index, Vector2f t_position) : 
+NodeData::NodeData(int t_index, Vector2f t_position, int t_enemyCount) :
 	m_position(t_position),
 	m_index(t_index),
 	m_marked(false),
 	m_cellState(CellState::None),
-	m_neighbours(new vector<NodeData*>()),
-	m_pathCost(INT32_MAX),
-	m_heuristic(INT32_MAX),
+	m_neighbours(new vector<NodeData*>()), 
 	m_tileWeight(0),
-	m_previous(nullptr)
+	m_occupied(false)
 {
+	for (int i = 0; i < t_enemyCount; i++)
+	{
+		m_pathCost.push_back(INT32_MAX);
+		m_heuristic = INT32_MAX;
+		m_previous.push_back(nullptr);
+		m_marked.push_back(false);
+	}
 }
 
 NodeData::~NodeData()
@@ -34,14 +39,19 @@ void NodeData::setTileWeight(int t_tileWeight)
 	m_tileWeight = t_tileWeight;
 }
 
-void NodeData::setMarked(bool t_marked)
+void NodeData::setMarked(bool t_marked, int t_id)
 {
-	m_marked = t_marked;
+	m_marked.at(t_id) = t_marked;
 }
 
-void NodeData::setPrevious(NodeData* t_data)
+void NodeData::setPrevious(NodeData* t_data, int t_id)
 {
-	m_previous = t_data;
+	m_previous.at(t_id) = t_data;
+}
+
+void NodeData::setOccupied(bool t_bool)
+{
+	m_occupied = t_bool;
 }
 
 Vector2f NodeData::getPosition()
@@ -69,12 +79,17 @@ int NodeData::getTileWeight()
 	return m_tileWeight;
 }
 
-bool NodeData::getMarked()
+bool NodeData::getMarked(int t_id)
 {
-	return m_marked;
+	return m_marked.at(t_id);
 }
 
-NodeData* NodeData::getPrevious()
+NodeData* NodeData::getPrevious(int t_id)
 {
-	return m_previous;
+	return m_previous.at(t_id);
+}
+
+bool NodeData::getOccupied()
+{
+	return m_occupied;
 }

@@ -13,7 +13,7 @@ using namespace sf;
 class AStar
 {
 public:
-	static vector<NodeData*>* astar(Grid* t_grid, NodeData* t_player, NodeData* t_enemy);
+	static void astar(Grid* t_grid, NodeData* t_player, NodeData* t_enemy, int t_id, vector<NodeData*>* t_path);
 	static float calculateHeuristic(NodeData* t_goal, NodeData* t_current, int t_cellCount);
-	static vector<NodeData*>* constructPath(NodeData* t_goal);
+	static void constructPath(NodeData* t_goal, int t_id, vector<NodeData*>* t_path);
 };

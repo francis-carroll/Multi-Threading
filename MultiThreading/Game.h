@@ -8,6 +8,7 @@
 #include <Enemy.h>
 #include <thread>
 #include <mutex>
+#include <ThreadPool.h>
 
 using namespace std;
 using namespace sf;
@@ -28,7 +29,7 @@ private:
 	void setupRender();
 	void renderGrid();
 	void initEnemies();
-	Enemy* createEnemy(int t_tileID);
+	Enemy* createEnemy(int t_tileID, int t_id);
 	void setupRenderTexure();
 
 	RenderWindow* m_window;
@@ -43,4 +44,5 @@ private:
 	mutex* m_mutex;
 	thread* m_setup;
 	RenderTexture* m_texture;
+	ThreadPool m_tp;
 };
