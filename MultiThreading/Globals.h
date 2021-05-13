@@ -13,7 +13,7 @@ const int HUNDRED_X = 100;
 const int THOUSAND_X = 1000;
 const int THIRTY_GRID_ENEMIES = 5;
 const int HUNDRED_GRID_ENEMIES = 50;
-const int THOUSAND_GRID_ENEMIES = 10;
+const int THOUSAND_GRID_ENEMIES = 500;
 
 static float directDistance(sf::Vector2f t_vector1, sf::Vector2f t_vector2)
 {
