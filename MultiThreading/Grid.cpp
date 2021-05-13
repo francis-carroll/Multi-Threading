@@ -5,7 +5,8 @@ mutex Grid::m_mutex;
 Grid::Grid(GridSize t_size) :
 	m_gridSize(t_size),
 	m_nodes(new vector<NodeData*>()),
-	m_vonNewmanDirection({ 3,5,1,7 })
+	m_vonNewmanDirection({ 3,5,1,7 }),
+	m_texture(new RenderTexture)
 {
 	setupGrid();
 }
@@ -17,6 +18,7 @@ Grid::~Grid()
 		delete node;
 	}
 	delete m_nodes;
+	delete m_texture;
 }
 
 vector<NodeData*>* Grid::getNodes()
@@ -32,6 +34,38 @@ GridSize Grid::getGridSize()
 int Grid::getCellCount()
 {
 	return m_cellCount;
+}
+
+RenderTexture* Grid::getTexture()
+{
+	return m_texture;
+}
+
+void Grid::setupRenderTexure(RectangleShape t_shape)
+{
+	m_texture->create(SCREEN_SIZE.x, SCREEN_SIZE.y);
+
+	m_texture->clear();
+
+	vector<NodeData*>* nodes = getNodes();
+	for (NodeData* n : *nodes)
+	{
+		if (n->getCellState() == CellState::Wall)
+			t_shape.setFillColor(Color::Black);
+		else if (n->getCellState() == CellState::Occupied)
+			t_shape.setFillColor(Color::Red);
+		else if (n->getCellState() == CellState::Path)
+			t_shape.setFillColor(Color::Yellow);
+		else
+			//t_game->m_shape.setFillColor(Color(rand() % 255, rand() % 255, rand() % 255));
+			t_shape.setFillColor(Color::Green);
+
+		t_shape.setPosition(n->getPosition());
+
+		m_texture->draw(t_shape);
+	}
+
+	m_texture->display();
 }
 
 Vector2i Grid::getRowCol(int t_nodeIndex, int t_cellCount)
@@ -70,7 +104,7 @@ void Grid::thirtyGrid()
 	{
 		for (int j = 0; j < THIRTY_X; j++)
 		{
-			NodeData* temp = new NodeData(i * THIRTY_X + j, Vector2f(i * (SCREEN_SIZE.x / THIRTY_X), j * (SCREEN_SIZE.y / THIRTY_X)), 5);
+			NodeData* temp = new NodeData(i * THIRTY_X + j, Vector2f(i * (SCREEN_SIZE.x / THIRTY_X), j * (SCREEN_SIZE.y / THIRTY_X)), THIRTY_GRID_ENEMIES);
 			if (i == 15 && j <= 25 || 
 				i == 6 && j >=5 && j < 20 ||
 				i == 24 && j >= 5 && j < 20)
@@ -89,7 +123,7 @@ void Grid::hundredGrid()
 	{
 		for (int j = 0; j < HUNDRED_X; j++)
 		{
-			NodeData* temp = new NodeData(i * HUNDRED_X + j, Vector2f(i * (SCREEN_SIZE.x / HUNDRED_X), j * (SCREEN_SIZE.y / HUNDRED_X)), 50);
+			NodeData* temp = new NodeData(i * HUNDRED_X + j, Vector2f(i * (SCREEN_SIZE.x / HUNDRED_X), j * (SCREEN_SIZE.y / HUNDRED_X)), HUNDRED_GRID_ENEMIES);
 			if (i == 25 && j <= 85  ||
 				i == 75 && j >= 15  ||
 				j == 50 && i >= 35 && i <= 65 ||
@@ -111,7 +145,7 @@ void Grid::thousandGrid()
 	{
 		for (int j = 0; j < THOUSAND_X; j++)
 		{
-			NodeData* temp = new NodeData(i * THOUSAND_X + j, Vector2f(i * (SCREEN_SIZE.x / THOUSAND_X), j * (SCREEN_SIZE.y / THOUSAND_X)), 10);
+			NodeData* temp = new NodeData(i * THOUSAND_X + j, Vector2f(i * (SCREEN_SIZE.x / THOUSAND_X), j * (SCREEN_SIZE.y / THOUSAND_X)), THOUSAND_GRID_ENEMIES);
 			if (i == 200 && j <= 850 ||
 				i == 400 && j >= 250 ||
 				i == 600 && j <= 850 ||

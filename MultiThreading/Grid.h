@@ -26,9 +26,12 @@ public:
 	vector<NodeData*>* getNodes();
 	GridSize getGridSize();
 	int getCellCount();
+	RenderTexture* getTexture();
+	void setupRenderTexure(RectangleShape t_shape);
 
 	static Vector2i getRowCol(int t_nodeIndex, int t_cellCount);
 	static int getIndex(int t_row, int t_col, int t_cellCount);
+	
 	static mutex m_mutex;
 private:
 	void setupGrid();
@@ -44,4 +47,5 @@ private:
 	vector<NodeData*>* m_nodes;
 	vector<int> m_vonNewmanDirection;
 	Player* m_player;
+	RenderTexture* m_texture;
 };

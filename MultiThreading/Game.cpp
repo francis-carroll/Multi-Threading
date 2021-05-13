@@ -4,8 +4,7 @@ Game::Game() :
 	m_window(new RenderWindow(VideoMode(SCREEN_SIZE.x, SCREEN_SIZE.y, 32), "MultiThreaded AStar Ambush Sim", Style::Default)),
 	m_player(new Player()),
 	m_enemies(nullptr),
-	m_mutex(new mutex),
-	m_texture(new RenderTexture)
+	m_mutex(new mutex)
 {
 	setup(GridSize::HundredX);
 	m_window->setActive(false);
@@ -61,8 +60,8 @@ void Game::render()
 {
 	srand((unsigned)time(nullptr));
 	m_window->clear();
-	//t_game->renderGrid(t_game);
-	Sprite s(m_texture->getTexture());
+
+	Sprite s(m_grid->getTexture()->getTexture());
 	m_window->draw(s);
 
 	for (Enemy* e : *m_enemies)
@@ -116,7 +115,7 @@ void Game::setup(GridSize t_size)
 	m_enemies = new vector<Enemy*>();
 	m_player->setOccupyingTile(m_grid->getNodes()->at(0));
 	setupRender();
-	setupRenderTexure();
+	m_grid->setupRenderTexure(m_shape);
 	initEnemies();
 }
 
@@ -131,7 +130,7 @@ void Game::setupRender()
 		m_shape.setOutlineColor(Color::Black);
 		m_spawnIDStart = Vector2f(20, 20);
 		m_spawnIDEnd = Vector2f(25, 25);
-		MAX_ENEMIES = 5;
+		MAX_ENEMIES = THIRTY_GRID_ENEMIES;
 		CELL_COUNT = THIRTY_X;
 		break;
 	case GridSize::HundredX:
@@ -140,7 +139,7 @@ void Game::setupRender()
 		m_shape.setOutlineColor(Color::Black);
 		m_spawnIDStart = Vector2f(65, 65);
 		m_spawnIDEnd = Vector2f(80, 80);
-		MAX_ENEMIES = 50;
+		MAX_ENEMIES = HUNDRED_GRID_ENEMIES;
 		CELL_COUNT = HUNDRED_X;
 		break;
 	case GridSize::ThousandX:
@@ -148,7 +147,7 @@ void Game::setupRender()
 		m_shape.setOutlineThickness(0.0f);
 		m_spawnIDStart = Vector2f(700, 700);
 		m_spawnIDEnd = Vector2f(800, 800);
-		MAX_ENEMIES = 200;
+		MAX_ENEMIES = THOUSAND_GRID_ENEMIES;
 		CELL_COUNT = THOUSAND_X;
 		break;
 	default:
@@ -192,12 +191,11 @@ void Game::initEnemies()
 			rowCol = Vector2i(randomInt(m_spawnIDStart.x,m_spawnIDEnd.x), randomInt(m_spawnIDStart.y, m_spawnIDEnd.y));
 		}
 	}
+
 	for (Enemy* e : *m_enemies)
 	{
-		//m_tp.addTask([&] {Enemy::setPath(e, m_grid, m_player->getOccupiedNode()); });
 		m_tp.addTask(bind(&Enemy::setPath,e, m_grid, m_player->getOccupiedNode()));
 	}
-	setupRenderTexure();
 }
 
 Enemy* Game::createEnemy(int t_tileID, int t_id)
@@ -205,31 +203,4 @@ Enemy* Game::createEnemy(int t_tileID, int t_id)
 	Enemy* e = new Enemy(t_id);
 	e->setOccupyingTile(m_grid->getNodes()->at(t_tileID));
 	return e;
-}
-
-void Game::setupRenderTexure()
-{
-	m_texture->create(SCREEN_SIZE.x, SCREEN_SIZE.y);
-
-	m_texture->clear();
-
-	vector<NodeData*>* nodes = m_grid->getNodes();
-	for (NodeData* n : *nodes)
-	{
-		if (n->getCellState() == CellState::Wall)
-			m_shape.setFillColor(Color::Black);
-		else if (n->getCellState() == CellState::Occupied)
-			m_shape.setFillColor(Color::Red);
-		else if (n->getCellState() == CellState::Path)
-			m_shape.setFillColor(Color::Yellow);
-		else
-			//t_game->m_shape.setFillColor(Color(rand() % 255, rand() % 255, rand() % 255));
-			m_shape.setFillColor(Color::Green);
-
-		m_shape.setPosition(n->getPosition());
-
-		m_texture->draw(m_shape);
-	}
-
-	m_texture->display();
 }

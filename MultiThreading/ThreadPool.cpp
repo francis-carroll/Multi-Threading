@@ -2,7 +2,8 @@
 
 ThreadPool::ThreadPool() :
 	m_cores(thread::hardware_concurrency() - 1),
-	m_currentCore(0)
+	m_currentCore(0),
+	m_terminate(false)
 {
 	for (int i = 0; i < m_cores; i++)
 	{
@@ -44,6 +45,7 @@ void ThreadPool::loop(ThreadPool& t_pool)
 			unique_lock<mutex> lock(t_pool.m_queueMutex);
 			t_pool.condition.wait(lock, [&] {return !t_pool.m_tasks.empty() ||  t_pool.m_terminate; });
 			task = t_pool.m_tasks.front();
+
 			t_pool.m_tasks.pop();
 		}
 		task();

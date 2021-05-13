@@ -1,8 +1,8 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <Grid.h>
 #include <Globals.h>
+#include <Grid.h>
 #include <Player.h>
 #include <AStar.h>
 #include <Enemy.h>
@@ -30,7 +30,6 @@ private:
 	void renderGrid();
 	void initEnemies();
 	Enemy* createEnemy(int t_tileID, int t_id);
-	void setupRenderTexure();
 
 	RenderWindow* m_window;
 	Grid* m_grid;
@@ -43,6 +42,5 @@ private:
 	int CELL_COUNT;
 	mutex* m_mutex;
 	thread* m_setup;
-	RenderTexture* m_texture;
 	ThreadPool m_tp;
 };
