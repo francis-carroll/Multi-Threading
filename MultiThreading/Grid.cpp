@@ -54,7 +54,7 @@ void Grid::setupRenderTexure(RectangleShape t_shape)
 		else if (n->getCellState() == CellState::Path)
 			t_shape.setFillColor(Color::Yellow);
 		else
-			t_shape.setFillColor(Color::Green);
+			t_shape.setFillColor(Color::White);
 
 		t_shape.setPosition(n->getPosition());
 

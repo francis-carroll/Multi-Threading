@@ -47,7 +47,7 @@ private:
 	int CELL_COUNT;
 	ThreadPool* m_tp;
 	View m_view;
-	Text m_fps;
+	Text m_gameTicks;
 	Font m_font;
 	Time m_timePerFrame;
 };

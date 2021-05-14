@@ -20,7 +20,6 @@ Enemy::~Enemy()
 void Enemy::setOccupyingTile(NodeData* t_node)
 {
     m_occupyingTile = t_node;
-    t_node->setOccupied(true);
 }
 
 void Enemy::setPath(Enemy* t_enemy, Grid* t_grid, NodeData* t_goal)
@@ -82,7 +81,7 @@ void Enemy::moveEnemy()
         {
             m_path->at(m_current)->setOccupied(false);
         }
-        if (m_timer >= 0.5f)
+       // if (m_timer >= 0.5f)
         {
             if (!m_path->at(m_current - 1)->getOccupied())
             {

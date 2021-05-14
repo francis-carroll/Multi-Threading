@@ -26,7 +26,7 @@ void Game::run()
 {
 	Clock clock;
 	Time timeSinceLastUpdate = Time::Zero;
-	m_timePerFrame = seconds(SIXTY_FPS);
+	m_timePerFrame = seconds(SIXTY_GAMETICK);
 	float fps = 0;
 	Time time = seconds(0);
 
@@ -36,7 +36,7 @@ void Game::run()
 		timeSinceLastUpdate += clock.getElapsedTime();
 		time += clock.getElapsedTime();
 
-		if (timeSinceLastUpdate > m_timePerFrame)
+		if (timeSinceLastUpdate > m_timePerFrame && fps < MAX_FPS)
 		{
 			processEvents();
 			update(m_timePerFrame);
@@ -47,7 +47,7 @@ void Game::run()
 		if (time.asSeconds() >= 1.0f)
 		{
 			time -= seconds(1);
-			m_fps.setString("FPS: " + to_string(fps));
+			m_gameTicks.setString("GameTick: " + to_string(fps));
 			fps = 0;
 		}
 		render();
@@ -88,7 +88,7 @@ void Game::render()
 	m_shape.setPosition(m_player->getOccupiedNode()->getPosition());
 	m_window->draw(m_shape);
 
-	m_window->draw(m_fps);
+	m_window->draw(m_gameTicks);
 
 	m_window->display();
 }
@@ -108,11 +108,15 @@ void Game::processEvents()
 				setup(GridSize::ThousandX);
 
 			if (event.key.code == Keyboard::Num4)
-				m_timePerFrame = seconds(THIRTY_FPS);
+				m_timePerFrame = seconds(THIRTY_GAMETICK);
 			else if(event.key.code == Keyboard::Num5)
-				m_timePerFrame = seconds(SIXTY_FPS);
+				m_timePerFrame = seconds(SIXTY_GAMETICK);
 			else if(event.key.code == Keyboard::Num6)
-				m_timePerFrame = seconds(ONE_TWENTY_FPS);
+				m_timePerFrame = seconds(ONE_TWENTY_GAMETICK);
+			else if (event.key.code == Keyboard::Num7)
+				m_timePerFrame = seconds(NO_GAMETICK);
+			else if (event.key.code == Keyboard::Num8)
+				m_timePerFrame = seconds(ONE_GAMETICK);
 
 			if (event.key.code == Keyboard::Up)
 				m_view.move(0.0f, -MOVE_SPEED);
@@ -145,12 +149,12 @@ void Game::setupFont()
 {
 	if (!m_font.loadFromFile("resources/fonts/default.ttf"))
 		cout << "Coulnt load font" << endl;
-	m_fps.setFont(m_font);
-	m_fps.setCharacterSize(40);
-	m_fps.setOutlineColor(Color::Black);
-	m_fps.setOutlineThickness(2.0f);
-	m_fps.setFillColor(Color::White);
-	m_fps.setPosition(Vector2f(300.0f, 10.0f));
+	m_gameTicks.setFont(m_font);
+	m_gameTicks.setCharacterSize(40);
+	m_gameTicks.setOutlineColor(Color::Black);
+	m_gameTicks.setOutlineThickness(2.0f);
+	m_gameTicks.setFillColor(Color::White);
+	m_gameTicks.setPosition(Vector2f(300.0f, 10.0f));
 }
 
 void Game::setup(GridSize t_size)

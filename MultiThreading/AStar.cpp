@@ -3,7 +3,6 @@
 void AStar::astar(Grid* t_grid, NodeData* t_player, NodeData* t_enemy, int t_id, vector<NodeData*>* t_path)
 {
 	std::priority_queue<NodeData*, std::vector<NodeData*>, CompareFn>* open = new std::priority_queue<NodeData*, std::vector<NodeData*>, CompareFn>(CompareFn(t_id));
-	vector<NodeData*>* closed = new vector<NodeData*>();
 
 	Grid::m_mutex.lock();
 	t_enemy->setPathCost(0, t_id);
@@ -55,10 +54,6 @@ void AStar::astar(Grid* t_grid, NodeData* t_player, NodeData* t_enemy, int t_id,
 			Grid::m_mutex.unlock();
 
 			Grid::m_mutex.lock();
-			delete closed;
-			Grid::m_mutex.unlock();
-
-			Grid::m_mutex.lock();
 			delete open;
 			Grid::m_mutex.unlock();
 
@@ -73,23 +68,28 @@ void AStar::astar(Grid* t_grid, NodeData* t_player, NodeData* t_enemy, int t_id,
 		open->pop();
 		Grid::m_mutex.unlock();
 
-		Grid::m_mutex.lock();
-		closed->push_back(current);
-		Grid::m_mutex.unlock();
-
 		for (NodeData* node : *current->getNeighbours())
 		{
 			if (node->getCellState() == CellState::Wall)
 				continue;
+
 
 			Grid::m_mutex.lock();
 			int tentG = current->getPathCost(t_id) + 1;
 			Grid::m_mutex.unlock();
 
 			Grid::m_mutex.lock();
+			if(node->getOccupied())
+				tentG = current->getPathCost(t_id) + 3;
+			else
+				tentG = current->getPathCost(t_id) + 1;
+			Grid::m_mutex.unlock();
+
+			Grid::m_mutex.lock();
 			if (tentG < node->getPathCost(t_id) && !node->getMarked(t_id))
 			{
 				Grid::m_mutex.unlock();
+
 				Grid::m_mutex.lock();
 				current->setTileWeight(current->getTileWeight() + 1);
 				Grid::m_mutex.unlock();
@@ -130,9 +130,6 @@ void AStar::astar(Grid* t_grid, NodeData* t_player, NodeData* t_enemy, int t_id,
 			}
 		}
 	}
-	Grid::m_mutex.lock();
-	delete closed;
-	Grid::m_mutex.unlock();
 
 	Grid::m_mutex.lock();
 	delete open;
