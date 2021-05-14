@@ -23,6 +23,7 @@ public:
 	queue<function<void()>> getTasks();
 private:
 	static void threadLoop(ThreadPool& t_pool);
+	void closeThreads();
 
 	vector<thread> m_threads;
 	queue<function<void()>> m_tasks;
@@ -30,4 +31,5 @@ private:
 	mutex m_queueMutex;
 	condition_variable m_conditionVariable;
 	bool m_terminate;
+	bool m_closed;
 };

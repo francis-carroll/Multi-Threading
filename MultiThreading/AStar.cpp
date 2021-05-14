@@ -110,6 +110,7 @@ void AStar::astar(Grid* t_grid, NodeData* t_player, NodeData* t_enemy, int t_id,
 				if (!node->getMarked(t_id))
 				{
 					Grid::m_mutex.unlock();
+
 					Grid::m_mutex.lock();
 					open->push(node);
 					Grid::m_mutex.unlock();
@@ -118,6 +119,7 @@ void AStar::astar(Grid* t_grid, NodeData* t_player, NodeData* t_enemy, int t_id,
 				{
 					Grid::m_mutex.unlock();
 				}
+
 				Grid::m_mutex.lock();
 				node->setMarked(true, t_id);
 				Grid::m_mutex.unlock();

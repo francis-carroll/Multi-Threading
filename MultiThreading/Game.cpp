@@ -4,26 +4,29 @@ Game::Game() :
 	m_window(new RenderWindow(VideoMode(SCREEN_SIZE.x, SCREEN_SIZE.y, 32), "MultiThreaded AStar Ambush Sim", Style::Default)),
 	m_player(new Player()),
 	m_enemies(nullptr),
-	m_mutex(new mutex),
-	m_view(View(Vector2f(SCREEN_SIZE.x / 2.0f, SCREEN_SIZE.x / 2.0f), SCREEN_SIZE))
+	m_view(View(Vector2f(SCREEN_SIZE.x / 2.0f, SCREEN_SIZE.x / 2.0f), SCREEN_SIZE)),
+	m_tp(new ThreadPool)
 {
 	m_window->setView(m_view);
+	setupFont();
 	setup(GridSize::HundredX);
 }
 
 Game::~Game()
 {
-	delete m_grid;
+	delete m_tp;
 	delete m_player;
+	for (Enemy* e : *m_enemies)
+		delete e;
 	delete m_enemies;
-	delete m_window;
+	delete m_grid;
 }
 
 void Game::run()
 {
 	Clock clock;
 	Time timeSinceLastUpdate = Time::Zero;
-	Time timePerFrame = seconds(1.f / 60.f);
+	m_timePerFrame = seconds(SIXTY_FPS);
 	float fps = 0;
 	Time time = seconds(0);
 
@@ -33,18 +36,18 @@ void Game::run()
 		timeSinceLastUpdate += clock.getElapsedTime();
 		time += clock.getElapsedTime();
 
-		if (timeSinceLastUpdate > timePerFrame)
+		if (timeSinceLastUpdate > m_timePerFrame)
 		{
 			processEvents();
-			update(timePerFrame);
-			timeSinceLastUpdate -= timePerFrame;
+			update(m_timePerFrame);
+			timeSinceLastUpdate -= m_timePerFrame;
 			clock.restart();
 			fps++;
 		}
 		if (time.asSeconds() >= 1.0f)
 		{
-			cout << fps << endl;
 			time -= seconds(1);
+			m_fps.setString("FPS: " + to_string(fps));
 			fps = 0;
 		}
 		render();
@@ -85,6 +88,8 @@ void Game::render()
 	m_shape.setPosition(m_player->getOccupiedNode()->getPosition());
 	m_window->draw(m_shape);
 
+	m_window->draw(m_fps);
+
 	m_window->display();
 }
 
@@ -93,19 +98,21 @@ void Game::processEvents()
 	Event event;
 	while (m_window->pollEvent(event))
 	{
-		if (event.type == Event::Closed)
-		{
-			m_window->close();
-		}
-
 		if (event.type == event.KeyPressed)
 		{
-			if (event.key.code == Keyboard::Num1 && !m_tp.getTasks().size() != 0)
+			if (event.key.code == Keyboard::Num1 && !m_tp->getTasks().size() != 0)
 				setup(GridSize::ThirtyX);
-			else if (event.key.code == Keyboard::Num2 && !m_tp.getTasks().size() != 0)
+			else if (event.key.code == Keyboard::Num2 && !m_tp->getTasks().size() != 0)
 				setup(GridSize::HundredX);
-			else if (event.key.code == Keyboard::Num3 && !m_tp.getTasks().size() != 0)
+			else if (event.key.code == Keyboard::Num3 && !m_tp->getTasks().size() != 0)
 				setup(GridSize::ThousandX);
+
+			if (event.key.code == Keyboard::Num4)
+				m_timePerFrame = seconds(THIRTY_FPS);
+			else if(event.key.code == Keyboard::Num5)
+				m_timePerFrame = seconds(SIXTY_FPS);
+			else if(event.key.code == Keyboard::Num6)
+				m_timePerFrame = seconds(ONE_TWENTY_FPS);
 
 			if (event.key.code == Keyboard::Up)
 				m_view.move(0.0f, -MOVE_SPEED);
@@ -121,8 +128,10 @@ void Game::processEvents()
 				m_grid->setupRenderTexure(m_shape);
 			}
 
-			if(event.key.code == Keyboard::Escape)
+			if (event.key.code == Keyboard::Escape)
+			{
 				m_window->close();
+			}
 		}
 
 		if (event.type == Event::MouseWheelMoved)
@@ -130,6 +139,18 @@ void Game::processEvents()
 			m_view.zoom(1 - (ZOOM_SPEED / event.mouseWheel.delta));
 		}
 	}
+}
+
+void Game::setupFont()
+{
+	if (!m_font.loadFromFile("resources/fonts/default.ttf"))
+		cout << "Coulnt load font" << endl;
+	m_fps.setFont(m_font);
+	m_fps.setCharacterSize(40);
+	m_fps.setOutlineColor(Color::Black);
+	m_fps.setOutlineThickness(2.0f);
+	m_fps.setFillColor(Color::White);
+	m_fps.setPosition(Vector2f(300.0f, 10.0f));
 }
 
 void Game::setup(GridSize t_size)
@@ -211,7 +232,7 @@ void Game::initEnemies()
 
 	for (Enemy* e : *m_enemies)
 	{
-		m_tp.addTask(bind(&Enemy::setPath,e, m_grid, m_player->getOccupiedNode()));
+		m_tp->addTask(bind(&Enemy::setPath,e, m_grid, m_player->getOccupiedNode()));
 	}
 }
 

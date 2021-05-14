@@ -2,7 +2,8 @@
 
 ThreadPool::ThreadPool() :
 	m_activeThreads(thread::hardware_concurrency() - 1),
-	m_terminate(false)
+	m_terminate(false),
+	m_closed(false)
 {
 	//add the loops to the availble threads.
 	for (int i = 0; i < m_activeThreads; i++)
@@ -13,20 +14,10 @@ ThreadPool::ThreadPool() :
 
 ThreadPool::~ThreadPool()
 {
-	unique_lock<mutex> lock(m_queueMutex);
-	m_terminate = true;
-
-	//notify all threads to listen
-	m_conditionVariable.notify_all();
-
-	//join and destroy threads
-	for (std::thread& every_thread : m_threads)
+	if (!m_closed)
 	{
-		every_thread.join();
+		closeThreads();
 	}
-
-	//clear the threads
-	m_threads.clear();
 }
 
 /// <summary>
@@ -51,7 +42,7 @@ queue<function<void()>> ThreadPool::getTasks()
 
 void ThreadPool::threadLoop(ThreadPool& t_pool)
 {
-	while (true)
+	while (!t_pool.m_terminate)
 	{
 		function<void()> task = function<void()>();
 		{
@@ -69,4 +60,23 @@ void ThreadPool::threadLoop(ThreadPool& t_pool)
 		//execute the task
 		task();
 	}
+}
+
+void ThreadPool::closeThreads()
+{
+	unique_lock<mutex> lock(m_queueMutex);
+	m_terminate = true;
+
+	//notify all threads to listen
+	m_conditionVariable.notify_all();
+
+	//join and destroy threads
+	for (std::thread& thread : m_threads)
+	{
+		thread.join();
+	}
+
+	//clear the threads
+	m_threads.clear();
+	m_closed = true;
 }

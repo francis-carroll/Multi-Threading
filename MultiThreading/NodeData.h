@@ -49,7 +49,6 @@ private:
 	CellState m_cellState;
 	vector<NodeData*>* m_neighbours;
 	bool m_occupied;
-	mutex m_mutex;
 	vector<pair<int, int>>* m_pathCost;
 	float m_heuristic;
 	int m_tileWeight;

@@ -14,11 +14,10 @@ Grid::Grid(GridSize t_size) :
 Grid::~Grid()
 {
 	for (NodeData* node : *m_nodes)
-	{
 		delete node;
-	}
 	delete m_nodes;
 	delete m_texture;
+	delete m_player;
 }
 
 vector<NodeData*>* Grid::getNodes()

@@ -25,6 +25,7 @@ public:
 private:
 	const Vector2f SIZE = Vector2f(1.0f, 1.0f);
 
+	void setupFont();
 	void setup(GridSize t_size);
 	void setupRender();
 	void initEnemies();
@@ -44,8 +45,9 @@ private:
 	Vector2i m_playerSpawnIDEnd;
 	int MAX_ENEMIES;
 	int CELL_COUNT;
-	mutex* m_mutex;
-	thread* m_setup;
-	ThreadPool m_tp;
+	ThreadPool* m_tp;
 	View m_view;
+	Text m_fps;
+	Font m_font;
+	Time m_timePerFrame;
 };

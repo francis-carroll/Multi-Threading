@@ -17,6 +17,9 @@ const int THOUSAND_GRID_ENEMIES = 500;
 const int MAX_ZOOM_IN = 50;
 const float ZOOM_SPEED = 0.1f;
 const float MOVE_SPEED = 10.0f;
+const float SIXTY_FPS = 1 / 60.0f;
+const float ONE_TWENTY_FPS = 1 / 120.0f;
+const float THIRTY_FPS = 1 / 30.0f;
 
 static float directDistance(sf::Vector2f t_vector1, sf::Vector2f t_vector2)
 {
