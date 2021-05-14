@@ -9,19 +9,25 @@
 
 using namespace std;
 
+/// <summary>
+/// Class used for pooling threads and executing tasks within the threads
+/// </summary>
 class ThreadPool
 {
 public:
 	ThreadPool();
 	~ThreadPool();
+
 	void addTask(function<void()> t_task);
-	static void loop(ThreadPool& t_pool);
+
+	queue<function<void()>> getTasks();
 private:
+	static void threadLoop(ThreadPool& t_pool);
+
 	vector<thread> m_threads;
 	queue<function<void()>> m_tasks;
-	int m_cores;
-	int m_currentCore;
+	int m_activeThreads;
 	mutex m_queueMutex;
-	condition_variable condition;
+	condition_variable m_conditionVariable;
 	bool m_terminate;
 };

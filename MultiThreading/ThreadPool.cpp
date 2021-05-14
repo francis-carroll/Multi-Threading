@@ -1,13 +1,13 @@
 #include "ThreadPool.h"
 
 ThreadPool::ThreadPool() :
-	m_cores(thread::hardware_concurrency() - 1),
-	m_currentCore(0),
+	m_activeThreads(thread::hardware_concurrency() - 1),
 	m_terminate(false)
 {
-	for (int i = 0; i < m_cores; i++)
+	//add the loops to the availble threads.
+	for (int i = 0; i < m_activeThreads; i++)
 	{
-		m_threads.push_back(thread(loop, ref(*this)));
+		m_threads.push_back(thread(threadLoop, ref(*this)));
 	}
 }
 
@@ -16,38 +16,57 @@ ThreadPool::~ThreadPool()
 	unique_lock<mutex> lock(m_queueMutex);
 	m_terminate = true;
 
-	condition.notify_all(); // wake up all threads.
+	//notify all threads to listen
+	m_conditionVariable.notify_all();
 
-	// Join all threads.
+	//join and destroy threads
 	for (std::thread& every_thread : m_threads)
 	{
 		every_thread.join();
 	}
 
+	//clear the threads
 	m_threads.clear();
 }
 
+/// <summary>
+/// Adds a task to the queue for processing within a thread
+/// </summary>
+/// <param name="t_task"></param>
 void ThreadPool::addTask(std::function<void()> t_task)
 {
 	{
 		unique_lock<mutex> lock(m_queueMutex);
 		m_tasks.push(t_task);
 	}
-	condition.notify_one();
+	//notify thread that a task has been added
+	m_conditionVariable.notify_one();
 }
 
-void ThreadPool::loop(ThreadPool& t_pool)
+queue<function<void()>> ThreadPool::getTasks()
+{
+	unique_lock<mutex> lock(m_queueMutex);
+	return m_tasks;
+}
+
+void ThreadPool::threadLoop(ThreadPool& t_pool)
 {
 	while (true)
 	{
 		function<void()> task = function<void()>();
 		{
 			unique_lock<mutex> lock(t_pool.m_queueMutex);
-			t_pool.condition.wait(lock, [&] {return !t_pool.m_tasks.empty() ||  t_pool.m_terminate; });
+
+			//if the task queue is not empty or it has been terminated wait
+			t_pool.m_conditionVariable.wait(lock, [&] {return !t_pool.m_tasks.empty() ||  t_pool.m_terminate; });
+
+			//take the next task
 			task = t_pool.m_tasks.front();
 
+			//pop the queue
 			t_pool.m_tasks.pop();
 		}
+		//execute the task
 		task();
 	}
 }

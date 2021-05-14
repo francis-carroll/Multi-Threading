@@ -4,10 +4,11 @@ Game::Game() :
 	m_window(new RenderWindow(VideoMode(SCREEN_SIZE.x, SCREEN_SIZE.y, 32), "MultiThreaded AStar Ambush Sim", Style::Default)),
 	m_player(new Player()),
 	m_enemies(nullptr),
-	m_mutex(new mutex)
+	m_mutex(new mutex),
+	m_view(View(Vector2f(SCREEN_SIZE.x / 2.0f, SCREEN_SIZE.x / 2.0f), SCREEN_SIZE))
 {
+	m_window->setView(m_view);
 	setup(GridSize::HundredX);
-	m_window->setActive(false);
 }
 
 Game::~Game()
@@ -54,6 +55,15 @@ void Game::update(Time t_deltaTime)
 {
 	for(Enemy* e : *m_enemies)
 		e->update(t_deltaTime);
+
+	m_enemies->erase(remove_if(m_enemies->begin(),
+		m_enemies->end(),
+		[&](Enemy* e)->bool {return (e->checkIfFinished()); }),
+		m_enemies->end());
+
+	limitZoom();
+	limitMovement();
+	m_window->setView(m_view);
 }
 
 void Game::render()
@@ -66,11 +76,14 @@ void Game::render()
 
 	for (Enemy* e : *m_enemies)
 	{
-		//m_shape.setFillColor(Color(rand()%255, rand() % 255, rand() % 255));
 		m_shape.setFillColor(Color::Blue);
 		m_shape.setPosition(e->getOccupiedNode()->getPosition());
 		m_window->draw(m_shape);
 	}
+
+	m_shape.setFillColor(Color::Red);
+	m_shape.setPosition(m_player->getOccupiedNode()->getPosition());
+	m_window->draw(m_shape);
 
 	m_window->display();
 }
@@ -87,15 +100,34 @@ void Game::processEvents()
 
 		if (event.type == event.KeyPressed)
 		{
-			if (event.key.code == Keyboard::Num1)
+			if (event.key.code == Keyboard::Num1 && !m_tp.getTasks().size() != 0)
 				setup(GridSize::ThirtyX);
-			else if (event.key.code == Keyboard::Num2)
+			else if (event.key.code == Keyboard::Num2 && !m_tp.getTasks().size() != 0)
 				setup(GridSize::HundredX);
-			else if (event.key.code == Keyboard::Num3)
+			else if (event.key.code == Keyboard::Num3 && !m_tp.getTasks().size() != 0)
 				setup(GridSize::ThousandX);
+
+			if (event.key.code == Keyboard::Up)
+				m_view.move(0.0f, -MOVE_SPEED);
+			else if(event.key.code == Keyboard::Down)
+				m_view.move(0.0f, MOVE_SPEED);
+			else if(event.key.code == Keyboard::Left)
+				m_view.move(-MOVE_SPEED, 0.0f);
+			else if(event.key.code == Keyboard::Right)
+				m_view.move(MOVE_SPEED, 0.0f);
+
+			if (event.key.code == Keyboard::R)
+			{
+				m_grid->setupRenderTexure(m_shape);
+			}
 
 			if(event.key.code == Keyboard::Escape)
 				m_window->close();
+		}
+
+		if (event.type == Event::MouseWheelMoved)
+		{
+			m_view.zoom(1 - (ZOOM_SPEED / event.mouseWheel.delta));
 		}
 	}
 }
@@ -113,8 +145,8 @@ void Game::setup(GridSize t_size)
 
 	m_grid = new Grid(t_size);
 	m_enemies = new vector<Enemy*>();
-	m_player->setOccupyingTile(m_grid->getNodes()->at(0));
 	setupRender();
+	initPlayer();
 	m_grid->setupRenderTexure(m_shape);
 	initEnemies();
 }
@@ -128,51 +160,36 @@ void Game::setupRender()
 		m_shape.setSize(Vector2f(SCREEN_SIZE.x / THIRTY_X, SCREEN_SIZE.y / THIRTY_X));
 		m_shape.setOutlineThickness(1.0f);
 		m_shape.setOutlineColor(Color::Black);
-		m_spawnIDStart = Vector2f(20, 20);
-		m_spawnIDEnd = Vector2f(25, 25);
 		MAX_ENEMIES = THIRTY_GRID_ENEMIES;
 		CELL_COUNT = THIRTY_X;
+		m_enemySpawnIDStart = Vector2i(20, 20);
+		m_enemySpawnIDEnd = Vector2i(25, 25);
+		m_playerSpawnIDStart = Vector2i(5, 5);
+		m_playerSpawnIDEnd = Vector2i(10, 10);
 		break;
 	case GridSize::HundredX:
 		m_shape.setSize(Vector2f(SCREEN_SIZE.x / HUNDRED_X, SCREEN_SIZE.y / HUNDRED_X));
 		m_shape.setOutlineThickness(1.0f);
 		m_shape.setOutlineColor(Color::Black);
-		m_spawnIDStart = Vector2f(65, 65);
-		m_spawnIDEnd = Vector2f(80, 80);
 		MAX_ENEMIES = HUNDRED_GRID_ENEMIES;
 		CELL_COUNT = HUNDRED_X;
+		m_enemySpawnIDStart = Vector2i(65, 65);
+		m_enemySpawnIDEnd = Vector2i(80, 80);
+		m_playerSpawnIDStart = Vector2i(10, 10);
+		m_playerSpawnIDEnd = Vector2i(15, 15);
 		break;
 	case GridSize::ThousandX:
 		m_shape.setSize(Vector2f(SCREEN_SIZE.x / THOUSAND_X, SCREEN_SIZE.y / THOUSAND_X));
 		m_shape.setOutlineThickness(0.0f);
-		m_spawnIDStart = Vector2f(700, 700);
-		m_spawnIDEnd = Vector2f(800, 800);
 		MAX_ENEMIES = THOUSAND_GRID_ENEMIES;
 		CELL_COUNT = THOUSAND_X;
+		m_enemySpawnIDStart = Vector2i(700, 700);
+		m_enemySpawnIDEnd = Vector2i(800, 800);
+		m_playerSpawnIDStart = Vector2i(10, 10);
+		m_playerSpawnIDEnd = Vector2i(15, 15);
 		break;
 	default:
 		break;
-	}
-}
-
-void Game::renderGrid()
-{
-	vector<NodeData*>* nodes = m_grid->getNodes();
-	for (NodeData* n : *nodes)
-	{
-		if (n->getCellState() == CellState::Wall)
-			m_shape.setFillColor(Color::Black);
-		else if (n->getCellState() == CellState::Occupied)
-			m_shape.setFillColor(Color::Red);
-		else if (n->getCellState() == CellState::Path)
-			m_shape.setFillColor(Color::Yellow);
-		else
-			m_shape.setFillColor(Color(rand() % 255, rand() % 255, rand() % 255));
-			//t_game->m_shape.setFillColor(Color::Green);
-		
-		m_shape.setPosition(n->getPosition());
-
-		m_window->draw(m_shape);
 	}
 }
 
@@ -180,7 +197,7 @@ void Game::initEnemies()
 {
 	for (int i = 0; i < MAX_ENEMIES;)
 	{
-		Vector2i rowCol = Vector2i(randomInt(m_spawnIDStart.x, m_spawnIDEnd.x), randomInt(m_spawnIDStart.y, m_spawnIDEnd.y));
+		Vector2i rowCol = Vector2i(randomInt(m_enemySpawnIDStart.x, m_enemySpawnIDEnd.x), randomInt(m_enemySpawnIDStart.y, m_enemySpawnIDEnd.y));
 		if (m_grid->getNodes()->at(m_grid->getIndex(rowCol.x, rowCol.y, CELL_COUNT))->getCellState() != CellState::Wall)
 		{
 			m_enemies->push_back(createEnemy(m_grid->getIndex(rowCol.x, rowCol.y, CELL_COUNT), i));
@@ -188,7 +205,7 @@ void Game::initEnemies()
 		}
 		else
 		{
-			rowCol = Vector2i(randomInt(m_spawnIDStart.x,m_spawnIDEnd.x), randomInt(m_spawnIDStart.y, m_spawnIDEnd.y));
+			rowCol = Vector2i(randomInt(m_enemySpawnIDStart.x,m_enemySpawnIDEnd.x), randomInt(m_enemySpawnIDStart.y, m_enemySpawnIDEnd.y));
 		}
 	}
 
@@ -198,9 +215,50 @@ void Game::initEnemies()
 	}
 }
 
+void Game::initPlayer()
+{
+	for (int i = 0; i < 1;)
+	{
+		Vector2i rowCol = Vector2i(randomInt(m_playerSpawnIDStart.x, m_playerSpawnIDEnd.x), randomInt(m_playerSpawnIDStart.y, m_playerSpawnIDEnd.y));
+		if (m_grid->getNodes()->at(m_grid->getIndex(rowCol.x, rowCol.y, CELL_COUNT))->getCellState() != CellState::Wall)
+		{
+			m_player->setOccupyingTile(m_grid->getNodes()->at(m_grid->getIndex(rowCol.x, rowCol.y, CELL_COUNT)));
+			i++;
+		}
+		else
+		{
+			rowCol = Vector2i(randomInt(m_playerSpawnIDStart.x, m_playerSpawnIDEnd.x), randomInt(m_playerSpawnIDStart.y, m_playerSpawnIDEnd.y));
+		}
+	}
+}
+
 Enemy* Game::createEnemy(int t_tileID, int t_id)
 {
 	Enemy* e = new Enemy(t_id);
 	e->setOccupyingTile(m_grid->getNodes()->at(t_tileID));
 	return e;
+}
+
+void Game::limitMovement()
+{
+	if (m_view.getCenter().x < ((SCREEN_SIZE.x / 2.0f) * (m_view.getSize().x / SCREEN_SIZE.x)))
+		m_view.setCenter(Vector2f((SCREEN_SIZE.x / 2.0f) * (m_view.getSize().x / SCREEN_SIZE.x), m_view.getCenter().y));
+	else if (m_view.getCenter().y < ((SCREEN_SIZE.y / 2.0f) * (m_view.getSize().y / SCREEN_SIZE.y)))
+		m_view.setCenter(Vector2f(m_view.getCenter().x, ((SCREEN_SIZE.y / 2.0f) * (m_view.getSize().y / SCREEN_SIZE.y))));
+	else if (m_view.getCenter().x > SCREEN_SIZE.x - ((SCREEN_SIZE.x / 2.0f) * (m_view.getSize().x / SCREEN_SIZE.x)))
+		m_view.setCenter(Vector2f(SCREEN_SIZE.x - ((SCREEN_SIZE.x / 2.0f) * (m_view.getSize().x / SCREEN_SIZE.x)), m_view.getCenter().y));
+	else if (m_view.getCenter().y > SCREEN_SIZE.y - ((SCREEN_SIZE.y / 2.0f) * (m_view.getSize().y / SCREEN_SIZE.y)))
+		m_view.setCenter(Vector2f(m_view.getCenter().x, SCREEN_SIZE.y - ((SCREEN_SIZE.y / 2.0f) * (m_view.getSize().y / SCREEN_SIZE.y))));
+}
+
+void Game::limitZoom()
+{
+	if (m_view.getSize().x <= MAX_ZOOM_IN)
+		m_view.setSize(Vector2f(MAX_ZOOM_IN, m_view.getSize().y));
+	else if (m_view.getSize().x >= SCREEN_SIZE.x)
+		m_view.setSize(Vector2f(SCREEN_SIZE.x, m_view.getSize().y));
+	if (m_view.getSize().y <= MAX_ZOOM_IN)
+		m_view.setSize(Vector2f(m_view.getSize().x, MAX_ZOOM_IN));
+	else if (m_view.getSize().y >= SCREEN_SIZE.y)
+		m_view.setSize(Vector2f(m_view.getSize().x, SCREEN_SIZE.y));
 }

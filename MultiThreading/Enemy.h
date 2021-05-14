@@ -23,7 +23,12 @@ public:
 
 	NodeData* getOccupiedNode();
 	int getID();
+	vector<NodeData*>* getPath();
+	bool getStart();
+	bool checkIfFinished();
 private:
+	void moveEnemy();
+
 	NodeData* m_occupyingTile;
 	bool m_finished;
 	int m_current;

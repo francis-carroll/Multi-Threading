@@ -52,12 +52,9 @@ void Grid::setupRenderTexure(RectangleShape t_shape)
 	{
 		if (n->getCellState() == CellState::Wall)
 			t_shape.setFillColor(Color::Black);
-		else if (n->getCellState() == CellState::Occupied)
-			t_shape.setFillColor(Color::Red);
 		else if (n->getCellState() == CellState::Path)
 			t_shape.setFillColor(Color::Yellow);
 		else
-			//t_game->m_shape.setFillColor(Color(rand() % 255, rand() % 255, rand() % 255));
 			t_shape.setFillColor(Color::Green);
 
 		t_shape.setPosition(n->getPosition());

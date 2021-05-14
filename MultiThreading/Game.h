@@ -27,20 +27,25 @@ private:
 
 	void setup(GridSize t_size);
 	void setupRender();
-	void renderGrid();
 	void initEnemies();
+	void initPlayer();
 	Enemy* createEnemy(int t_tileID, int t_id);
+	void limitMovement();
+	void limitZoom();
 
 	RenderWindow* m_window;
 	Grid* m_grid;
 	RectangleShape m_shape;
 	Player* m_player;
 	vector<Enemy*>* m_enemies;
-	Vector2f m_spawnIDStart;
-	Vector2f m_spawnIDEnd;
+	Vector2i m_enemySpawnIDStart;
+	Vector2i m_enemySpawnIDEnd;
+	Vector2i m_playerSpawnIDStart;
+	Vector2i m_playerSpawnIDEnd;
 	int MAX_ENEMIES;
 	int CELL_COUNT;
 	mutex* m_mutex;
 	thread* m_setup;
 	ThreadPool m_tp;
+	View m_view;
 };
